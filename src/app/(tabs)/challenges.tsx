@@ -14,6 +14,9 @@ import { ChallengeCard } from '@/components/challenge/challenge-card';
 import { ActiveChallengeCard } from '@/components/challenge/active-challenge-card';
 import { CompletedChallengeCard } from '@/components/challenge/completed-challenge-card';
 import { EmptyState } from '@/components/challenge/empty-state';
+import { BlitzChallengeCard } from '@/components/challenge/blitz-challenge-card';
+import { BlitzModal } from '@/components/home/blitz-modal';
+import { BlitzQueueType } from '@/types/blitz';
 
 export default function ChallengesScreen() {
   const { challenges, activeChallenges, completedChallenges, joinChallenge, refreshChallenges } = useChallenges();
@@ -23,6 +26,20 @@ export default function ChallengesScreen() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyFilterType>('all');
   const [myChallengesTab, setMyChallengesTab] = useState<'active' | 'completed'>('active');
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // 60-Second Blitz Matchmaking & Live AI Battle State
+  const [blitzModalVisible, setBlitzModalVisible] = useState(false);
+  const [selectedBlitzQueue, setSelectedBlitzQueue] = useState<BlitzQueueType>('stranger');
+
+  const handleOpenBlitzQueue = (queue: BlitzQueueType) => {
+    setSelectedBlitzQueue(queue);
+    setBlitzModalVisible(true);
+  };
+
+  const handleStartSoloBlitz = (exercise: 'pushups' | 'squats') => {
+    setSelectedBlitzQueue('stranger');
+    setBlitzModalVisible(true);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -77,6 +94,12 @@ export default function ChallengesScreen() {
         }>
         {/* Section 1 — Page Header */}
         <ChallengeHeader />
+
+        {/* 60-Second Blitz Matchmaking & Live AI Form Arena */}
+        <BlitzChallengeCard
+          onSelectQueue={handleOpenBlitzQueue}
+          onStartSolo={handleStartSoloBlitz}
+        />
 
         {/* View Mode Switcher (Discover vs My Challenges) */}
         <ViewModeToggle
@@ -202,6 +225,13 @@ export default function ChallengesScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* 60-Second Blitz Live Battle Modal */}
+      <BlitzModal
+        visible={blitzModalVisible}
+        initialQueue={selectedBlitzQueue}
+        onClose={() => setBlitzModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }

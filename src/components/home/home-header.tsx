@@ -54,6 +54,57 @@ export function HomeHeader({ currentStreak = 0 }: HomeHeaderProps) {
 }
 
 const styles = StyleSheet.create({
+  headerContainer: {
+    paddingVertical: Spacing.space2,
+    marginBottom: Spacing.space3,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  brandCol: {
+    flex: 1,
+    paddingTop: 4,
+    justifyContent: 'flex-start',
+  },
+  brandTitle: {
+    ...Typography.pageTitle,
+    color: Palette.forest,
+    letterSpacing: -0.5,
+    fontWeight: '900',
+    fontSize: 32,
+    lineHeight: 36,
+  },
+  campusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(24, 53, 45, 0.08)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: Radius.full,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    maxWidth: 240,
+  },
+  pulsingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#34D399',
+  },
+  campusBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: Palette.forest,
+  },
+  subtitle: {
+    fontSize: 12,
+    color: Palette.muted,
+    fontWeight: '500',
+    marginTop: 6,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
