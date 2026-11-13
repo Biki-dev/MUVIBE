@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { ActivityRecord } from '@/types/activity';
 
@@ -126,6 +126,7 @@ const styles = StyleSheet.create({
     color: Palette.ink,
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   seeAllBtn: {
     flexDirection: 'row',
@@ -136,6 +137,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     fontSize: 12.5,
   },
   list: {
@@ -168,10 +170,12 @@ const styles = StyleSheet.create({
   activityType: {
     fontSize: 13.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   activityStats: {
     fontSize: 11.5,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
   },
   activityRight: {
@@ -181,10 +185,12 @@ const styles = StyleSheet.create({
   activityDuration: {
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
   activityDate: {
     fontSize: 10.5,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
   },
 });

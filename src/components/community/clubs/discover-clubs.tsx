@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, Pressable } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { CommunityClub, ClubCategory } from '@/types/community';
 import { ClubCard } from './club-card';
@@ -205,6 +205,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
   scopeTextActive: {
@@ -230,9 +231,11 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
     color: Palette.ink,
   },
   catChipTextActive: {
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
 });

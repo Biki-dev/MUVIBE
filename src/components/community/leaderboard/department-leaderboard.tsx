@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { DepartmentRankItem } from '@/types/community';
 import { AppIcon } from '@/components/ui/icon';
 
@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
   yourDeptText: {
     fontSize: 9,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   studentsCount: {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 
 interface MyRankingCardProps {
@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Palette.ink,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   textWrap: {},
   title: {

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { useAuth } from '@/context/auth-context';
 import {
@@ -409,6 +409,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 13,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
   },
   notFoundWrap: {
@@ -459,6 +460,7 @@ const styles = StyleSheet.create({
   },
   avatarEmoji: {
     fontSize: 28,
+    fontFamily: FontFamily.regular,
   },
   nameBlock: {
     flex: 1,
@@ -467,6 +469,7 @@ const styles = StyleSheet.create({
     ...Typography.cardHeading,
     fontSize: 18,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
     marginBottom: 1,
   },
@@ -485,6 +488,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.forest,
   },
   statsBar: {
@@ -504,6 +508,7 @@ const styles = StyleSheet.create({
     ...Typography.cardHeading,
     fontSize: 16,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   statLabel: {
@@ -529,6 +534,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Palette.ink,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
   },
   bioText: {
     ...Typography.body,
@@ -566,6 +572,7 @@ const styles = StyleSheet.create({
   connectBtnText: {
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
   connectBtnTextOutline: {
@@ -581,6 +588,7 @@ const styles = StyleSheet.create({
   acceptBigBtnText: {
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
   // Modal
@@ -621,6 +629,7 @@ const styles = StyleSheet.create({
   },
   emptySocialText: {
     fontSize: 13,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
   },
   modalUserRow: {
@@ -642,10 +651,12 @@ const styles = StyleSheet.create({
   modalUserName: {
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   modalUserHandle: {
     fontSize: 11.5,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
   },
 });

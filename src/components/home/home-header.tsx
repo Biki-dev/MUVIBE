@@ -1,4 +1,4 @@
-import { Palette, Spacing, Typography } from '@/constants/theme';
+import { Palette, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
     ...Typography.sectionHeading,
     fontSize: 20,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
     letterSpacing: -0.4,
   },

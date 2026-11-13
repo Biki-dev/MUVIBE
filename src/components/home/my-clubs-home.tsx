@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 
 interface Club {
@@ -105,6 +105,7 @@ const styles = StyleSheet.create({
     color: Palette.ink,
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   seeAllBtn: {
     flexDirection: 'row',
@@ -115,6 +116,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     fontSize: 12.5,
   },
   scrollRow: {
@@ -145,10 +147,12 @@ const styles = StyleSheet.create({
   },
   emojiText: {
     fontSize: 22,
+    fontFamily: FontFamily.regular,
   },
   clubName: {
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
     textAlign: 'center',
     lineHeight: 16,
@@ -166,6 +170,7 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     color: Palette.muted,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
   },
   discoverCard: {
     borderStyle: 'dashed',
@@ -184,6 +189,7 @@ const styles = StyleSheet.create({
   discoverText: {
     fontSize: 11.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
     textAlign: 'center',
     lineHeight: 16,

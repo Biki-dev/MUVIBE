@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   Pressable,
-  Alert,
   Modal,
   TextInput,
   ScrollView,
@@ -13,7 +12,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { ActivityType } from '@/types/activity';
@@ -21,6 +20,7 @@ import {
   createSession,
   getElapsedSeconds,
   getElapsedString,
+  formatDuration,
   estimateCalories,
   stepsToDistance,
   calculatePace,
@@ -29,6 +29,18 @@ import {
   TrackingStatus,
 } from '@/services/tracking-engine';
 import { saveActivity } from '@/services/activity-storage';
+import { SensorTracker, SensorSnapshot, describeSensors } from '@/services/sensors';
+import { RouteMap } from '@/components/activity/route-map';
+
+const EMPTY_SNAPSHOT: SensorSnapshot = {
+  steps: 0,
+  distanceKm: 0,
+  speedKmh: 0,
+  route: [],
+  position: null,
+  pedometer: 'idle',
+  gps: 'idle',
+};
 
 interface ActivityMeta {
   label: string;
@@ -48,7 +60,7 @@ const ACTIVITY_METAS: Record<string, ActivityMeta> = {
   walking: {
     label: 'Walking',
     primaryMetric: 'steps',
-    trackingModeLabel: 'Pedometer Step Tracking',
+    trackingModeLabel: 'Steps & GPS',
     iconName: 'walk',
     iconType: 'mci',
     showSteps: true,
@@ -61,7 +73,7 @@ const ACTIVITY_METAS: Record<string, ActivityMeta> = {
   running: {
     label: 'Running',
     primaryMetric: 'distance',
-    trackingModeLabel: 'GPS & Cadence Tracking',
+    trackingModeLabel: 'GPS & Steps',
     iconName: 'run',
     iconType: 'mci',
     showSteps: true,
@@ -74,7 +86,7 @@ const ACTIVITY_METAS: Record<string, ActivityMeta> = {
   cycling: {
     label: 'Cycling',
     primaryMetric: 'distance',
-    trackingModeLabel: 'Speed & Route Tracking',
+    trackingModeLabel: 'GPS Route',
     iconName: 'bicycle-outline',
     iconType: 'ion',
     showSteps: false,
@@ -87,7 +99,7 @@ const ACTIVITY_METAS: Record<string, ActivityMeta> = {
   jump_rope: {
     label: 'Jump Rope',
     primaryMetric: 'jumps',
-    trackingModeLabel: 'Motion Jump Detection',
+    trackingModeLabel: 'Jump Timer',
     iconName: 'timer-outline',
     iconType: 'ion',
     showSteps: false,
@@ -139,7 +151,7 @@ const ACTIVITY_METAS: Record<string, ActivityMeta> = {
   hiking: {
     label: 'Hiking',
     primaryMetric: 'distance',
-    trackingModeLabel: 'Trail Distance Tracker',
+    trackingModeLabel: 'GPS Trail',
     iconName: 'trail-sign-outline',
     iconType: 'ion',
     showSteps: true,
@@ -186,10 +198,57 @@ export default function TrackingScreen() {
   const [sessionNotes, setSessionNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  // Confirmations are an in-app dialog rather than Alert.alert, which is a
+  // no-op on React Native Web: on web the Finish button did nothing at all.
+  const [confirm, setConfirm] = useState<'finish' | 'exit' | null>(null);
+
   const sessionRef = useRef<TrackingSession>(session);
   sessionRef.current = session;
 
-  // Active tracking tick timer
+  // Real sensors. Steps come from the pedometer, distance and speed from
+  // GPS. When neither is available the numbers simply stay at zero and the
+  // user enters totals at the end: nothing is invented.
+  const usesSteps = meta.showSteps;
+  const usesGps = meta.showDistance && activityType !== 'swimming';
+  const trackerRef = useRef<SensorTracker | null>(null);
+  const [sensors, setSensors] = useState<SensorSnapshot>(EMPTY_SNAPSHOT);
+
+  const applySnapshot = (snap: SensorSnapshot) => {
+    setSensors(snap);
+    setSession((prev) => {
+      const steps = snap.pedometer === 'active' ? snap.steps : prev.steps;
+
+      // GPS is the truth for distance when it is on. Otherwise, for step
+      // activities, estimate from stride so the number still means something.
+      let distanceKm = prev.distanceKm;
+      if (snap.gps === 'active') {
+        distanceKm = snap.distanceKm;
+      } else if (snap.pedometer === 'active' && (activityType === 'walking' || activityType === 'running' || activityType === 'hiking')) {
+        distanceKm = stepsToDistance(steps, activityType === 'running' ? 'running' : 'walking');
+      }
+
+      return { ...prev, steps, distanceKm };
+    });
+  };
+
+  const ensureTracker = () => {
+    if (!trackerRef.current) {
+      trackerRef.current = new SensorTracker({
+        useSteps: usesSteps,
+        useGps: usesGps,
+        onUpdate: applySnapshot,
+      });
+    }
+    return trackerRef.current;
+  };
+
+  useEffect(() => {
+    return () => {
+      trackerRef.current?.stop();
+    };
+  }, []);
+
+  // Clock tick: elapsed time and the calorie estimate that depends on it.
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | null = null;
 
@@ -200,47 +259,16 @@ export default function TrackingScreen() {
         setElapsedSeconds(totalSec);
         setElapsedString(getElapsedString(cur));
 
-        // Sensor simulation increments based on activity type
-        setSession((prev) => {
-          let newSteps = prev.steps;
-          let newDistance = prev.distanceKm;
-          let newJumps = prev.jumpCount;
-
-          if (activityType === 'walking') {
-            // ~1.6 steps per second
-            newSteps = prev.steps + (Math.random() > 0.4 ? 2 : 1);
-            newDistance = stepsToDistance(newSteps, 'walking');
-          } else if (activityType === 'running') {
-            // ~2.6 steps per second
-            newSteps = prev.steps + (Math.random() > 0.3 ? 3 : 2);
-            newDistance = stepsToDistance(newSteps, 'running');
-          } else if (activityType === 'cycling') {
-            // ~18 km/h = ~0.005 km/sec
-            newDistance = Number((prev.distanceKm + 0.0051).toFixed(3));
-          } else if (activityType === 'jump_rope') {
-            // ~1.8 jumps per second
-            newJumps = prev.jumpCount + (Math.random() > 0.2 ? 2 : 1);
-          } else if (activityType === 'hiking') {
-            newSteps = prev.steps + (Math.random() > 0.6 ? 2 : 1);
-            newDistance = stepsToDistance(newSteps, 'walking');
-          }
-
-          const newCalories = estimateCalories(
+        setSession((prev) => ({
+          ...prev,
+          calories: estimateCalories(
             activityType,
             totalSec,
-            newDistance,
-            newSteps,
-            newJumps
-          );
-
-          return {
-            ...prev,
-            steps: newSteps,
-            distanceKm: newDistance,
-            jumpCount: newJumps,
-            calories: newCalories,
-          };
-        });
+            prev.distanceKm,
+            prev.steps,
+            prev.jumpCount
+          ),
+        }));
       }, 1000);
     }
 
@@ -258,9 +286,11 @@ export default function TrackingScreen() {
       pausedDuration: 0,
       pausedAt: null,
     }));
+    ensureTracker().start();
   };
 
   const handlePause = () => {
+    trackerRef.current?.pause();
     setSession((prev) => ({
       ...prev,
       status: 'paused',
@@ -278,54 +308,35 @@ export default function TrackingScreen() {
         pausedAt: null,
       };
     });
+    trackerRef.current?.resume();
+  };
+
+  /** Moves the session into the review sheet, prefilled from the sensors. */
+  const openReview = () => {
+    const finalSec = getElapsedSeconds(sessionRef.current);
+    setFinalDurationSec(finalSec);
+    setFinalDistanceInput(
+      sessionRef.current.distanceKm > 0
+        ? String(sessionRef.current.distanceKm.toFixed(2))
+        : ''
+    );
+    setFinalStepsInput(sessionRef.current.steps > 0 ? String(sessionRef.current.steps) : '');
+    setFinalJumpsInput(
+      sessionRef.current.jumpCount > 0 ? String(sessionRef.current.jumpCount) : ''
+    );
+    setFinalCaloriesInput(String(sessionRef.current.calories));
+    setSession((prev) => ({ ...prev, status: 'completed' }));
+    setIsCompletionModalOpen(true);
   };
 
   const handleStopPrompt = () => {
-    Alert.alert(
-      'Finish Activity?',
-      'Are you ready to complete and review this session?',
-      [
-        { text: 'Keep Going', style: 'cancel' },
-        {
-          text: 'Finish & Review',
-          style: 'default',
-          onPress: () => {
-            const finalSec = getElapsedSeconds(sessionRef.current);
-            setFinalDurationSec(finalSec);
-            setFinalDistanceInput(
-              sessionRef.current.distanceKm > 0
-                ? String(sessionRef.current.distanceKm.toFixed(2))
-                : ''
-            );
-            setFinalStepsInput(
-              sessionRef.current.steps > 0 ? String(sessionRef.current.steps) : ''
-            );
-            setFinalJumpsInput(
-              sessionRef.current.jumpCount > 0 ? String(sessionRef.current.jumpCount) : ''
-            );
-            setFinalCaloriesInput(String(sessionRef.current.calories));
-            setSession((prev) => ({ ...prev, status: 'completed' }));
-            setIsCompletionModalOpen(true);
-          },
-        },
-      ]
-    );
+    trackerRef.current?.pause();
+    setConfirm('finish');
   };
 
   const handleBack = () => {
     if (session.status === 'active' || session.status === 'paused') {
-      Alert.alert(
-        'Exit Session?',
-        'An active tracking session is in progress. Do you want to discard it?',
-        [
-          { text: 'Continue Session', style: 'cancel' },
-          {
-            text: 'Discard & Exit',
-            style: 'destructive',
-            onPress: () => router.back(),
-          },
-        ]
-      );
+      setConfirm('exit');
     } else {
       router.back();
     }
@@ -386,7 +397,17 @@ export default function TrackingScreen() {
 
   // Pace / Speed computed values
   const currentPace = calculatePace(elapsedSeconds, session.distanceKm);
-  const currentSpeed = calculateSpeed(elapsedSeconds, session.distanceKm);
+  // Live speed from the GPS chip while moving; session average otherwise.
+  const currentSpeed =
+    sensors.gps === 'active' && sensors.speedKmh > 0
+      ? sensors.speedKmh
+      : calculateSpeed(elapsedSeconds, session.distanceKm);
+  const sensorStatus =
+    session.status === 'idle'
+      ? usesGps || usesSteps
+        ? 'Sensors start with the session'
+        : 'Duration timer'
+      : describeSensors(sensors, usesSteps, usesGps);
 
   // Render primary metric
   const renderPrimaryMetric = () => {
@@ -471,12 +492,23 @@ export default function TrackingScreen() {
           />
           <View style={styles.modeTextWrap}>
             <Text style={styles.modeTitle}>{meta.trackingModeLabel}</Text>
-            <Text style={styles.modeSub}>{meta.sensorNote}</Text>
+            <Text style={styles.modeSub}>{sensorStatus}</Text>
           </View>
         </View>
 
         {/* Primary Display */}
         {renderPrimaryMetric()}
+
+        {/* Route on OpenStreetMap, for GPS activities once tracking has begun */}
+        {usesGps && session.status !== 'idle' && (
+          <View style={styles.mapWrap}>
+            <RouteMap
+              route={sensors.route}
+              position={sensors.position}
+              follow={session.status === 'active'}
+            />
+          </View>
+        )}
 
         {/* Secondary Stats Grid */}
         <View style={styles.secondaryGrid}>
@@ -601,6 +633,63 @@ export default function TrackingScreen() {
         )}
       </View>
 
+      {/* Confirmations. Works on every platform, unlike Alert.alert. */}
+      <Modal
+        visible={confirm !== null}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setConfirm(null)}>
+        <Pressable style={styles.confirmBackdrop} onPress={() => setConfirm(null)} />
+        <View style={styles.confirmWrap} pointerEvents="box-none">
+          <View style={styles.confirmCard}>
+            <Text style={styles.confirmTitle}>
+              {confirm === 'exit' ? 'Discard this session?' : 'Finish activity?'}
+            </Text>
+            <Text style={styles.confirmBody}>
+              {confirm === 'exit'
+                ? 'Tracking is still running. Leaving now throws away everything recorded in this session.'
+                : 'You can review and edit the numbers before saving.'}
+            </Text>
+
+            <View style={styles.confirmActions}>
+              <Pressable
+                style={styles.confirmGhost}
+                onPress={() => {
+                  setConfirm(null);
+                  // Finishing paused the tracker; going back should resume it.
+                  if (confirm === 'finish' && session.status === 'active') {
+                    trackerRef.current?.resume();
+                  }
+                }}>
+                <Text style={styles.confirmGhostText}>
+                  {confirm === 'exit' ? 'Keep going' : 'Not yet'}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                style={[
+                  styles.confirmPrimary,
+                  confirm === 'exit' && styles.confirmDestructive,
+                ]}
+                onPress={() => {
+                  const which = confirm;
+                  setConfirm(null);
+                  if (which === 'exit') router.back();
+                  else openReview();
+                }}>
+                <Text
+                  style={[
+                    styles.confirmPrimaryText,
+                    confirm === 'exit' && styles.confirmDestructiveText,
+                  ]}>
+                  {confirm === 'exit' ? 'Discard' : 'Finish & review'}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Completion & Summary Modal */}
       <Modal
         visible={isCompletionModalOpen}
@@ -627,19 +716,7 @@ export default function TrackingScreen() {
               {/* Duration Summary */}
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryLabel}>Total Duration</Text>
-                <Text style={styles.summaryValueBig}>
-                  {getElapsedString({
-                    type: activityType,
-                    status: 'completed',
-                    startTime: 0,
-                    pausedDuration: 0,
-                    pausedAt: null,
-                    steps: 0,
-                    distanceKm: 0,
-                    jumpCount: 0,
-                    calories: 0,
-                  }) || `${Math.floor(finalDurationSec / 60)}m ${finalDurationSec % 60}s`}
-                </Text>
+                <Text style={styles.summaryValueBig}>{formatDuration(finalDurationSec)}</Text>
               </View>
 
               {/* Editable Distance (if applicable) */}
@@ -740,6 +817,69 @@ export default function TrackingScreen() {
 }
 
 const styles = StyleSheet.create({
+  confirmBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: Palette.overlay,
+  },
+  confirmWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.space5,
+  },
+  confirmCard: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: Palette.white,
+    borderRadius: Radius.lg,
+    padding: Spacing.space5,
+  },
+  confirmTitle: {
+    ...Typography.sectionHeading,
+    color: Palette.ink,
+    marginBottom: 6,
+  },
+  confirmBody: {
+    ...Typography.body,
+    color: Palette.muted,
+    marginBottom: Spacing.space5,
+  },
+  confirmActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: Spacing.space2,
+  },
+  confirmGhost: {
+    paddingHorizontal: Spacing.space4,
+    paddingVertical: 11,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+    borderColor: Palette.border,
+  },
+  confirmGhostText: {
+    ...Typography.bodyBold,
+    color: Palette.muted,
+  },
+  confirmPrimary: {
+    paddingHorizontal: Spacing.space5,
+    paddingVertical: 11,
+    borderRadius: Radius.full,
+    backgroundColor: Palette.lime,
+  },
+  confirmPrimaryText: {
+    ...Typography.bodyBold,
+    color: Palette.ink,
+  },
+  confirmDestructive: {
+    backgroundColor: Palette.coral,
+  },
+  confirmDestructiveText: {
+    color: Palette.white,
+  },
   safeArea: {
     flex: 1,
     backgroundColor: Palette.canvas,
@@ -792,6 +932,9 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.space5,
     gap: 12,
   },
+  mapWrap: {
+    marginBottom: Spacing.space4,
+  },
   statusDot: {
     width: 10,
     height: 10,
@@ -840,6 +983,7 @@ const styles = StyleSheet.create({
     lineHeight: 64,
     color: Palette.ink,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     letterSpacing: -1,
   },
   primaryMetricUnit: {
@@ -847,6 +991,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Palette.muted,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginTop: 4,
@@ -872,12 +1017,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Palette.muted,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
   },
   secondaryValue: {
     ...Typography.cardHeading,
     fontSize: 18,
     color: Palette.ink,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   bottomBar: {
     paddingHorizontal: Spacing.space4,
@@ -969,6 +1116,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.ink,
     marginBottom: 4,
   },

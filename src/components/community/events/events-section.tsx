@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput, ScrollView } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { CommunityEvent, EventCategory, EventTab } from '@/types/community';
 import { FeaturedEventCard } from './featured-event-card';
@@ -239,11 +239,13 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12.5,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
   tabTextActive: {
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   searchBar: {
     flexDirection: 'row',
@@ -285,10 +287,12 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
     color: Palette.ink,
   },
   catChipTextActive: {
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   sectionHeadingBlock: {
     marginBottom: Spacing.space3,

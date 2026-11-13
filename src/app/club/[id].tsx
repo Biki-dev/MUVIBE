@@ -22,7 +22,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { useCommunity } from '@/context/community-context';
@@ -382,6 +382,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
     letterSpacing: 0.5,
   },
@@ -408,6 +409,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Palette.lime,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   tabsContainer: {
     flexDirection: 'row',
@@ -436,11 +438,13 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
   tabTextActive: {
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   statsCard: {
     flexDirection: 'row',
@@ -520,6 +524,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
     marginBottom: 2,
   },
@@ -537,6 +542,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.muted,
     marginBottom: Spacing.space2,
   },
@@ -558,6 +564,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Palette.ink,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
   },
   bottomBar: {
     paddingHorizontal: Spacing.space4,

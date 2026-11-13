@@ -10,7 +10,7 @@ import {
   Alert,
   Linking,
 } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { ClubDiscussionPost, ClubPostComment } from '@/types/community';
@@ -456,6 +456,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   emptyCard: {
@@ -539,17 +540,20 @@ const styles = StyleSheet.create({
   authorInitial: {
     fontSize: 11,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   authorName: {
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   dot: {
     color: Palette.muted,
     fontSize: 10,
+    fontFamily: FontFamily.regular,
   },
   postTime: {
     ...Typography.supporting,
@@ -608,6 +612,7 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     color: Palette.muted,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   commentsDrawer: {
     backgroundColor: Palette.surfaceHighlight,
@@ -642,6 +647,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   commentTime: {
@@ -670,6 +676,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     fontSize: 12,
+    fontFamily: FontFamily.regular,
     color: Palette.ink,
   },
   sendCommentBtn: {
@@ -720,6 +727,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Palette.ink,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     marginBottom: 10,
   },
   inputBody: {
@@ -729,6 +737,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 13,
+    fontFamily: FontFamily.regular,
     color: Palette.ink,
     height: 100,
     textAlignVertical: 'top',
@@ -741,6 +750,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     fontSize: 12,
+    fontFamily: FontFamily.regular,
     color: Palette.ink,
     marginBottom: 8,
   },

@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { useChallenges } from '@/context/challenge-context';
@@ -444,6 +444,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 10,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   categoryBadge: {
@@ -456,6 +457,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 10.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
   diffBadge: {
@@ -467,6 +469,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 10.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   bannerTitle: {
     ...Typography.pageTitle,
@@ -474,6 +477,7 @@ const styles = StyleSheet.create({
     lineHeight: 30,
     color: Palette.white,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     marginBottom: 6,
   },
   bannerDescription: {
@@ -549,6 +553,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
   progressRemainingText: {
@@ -608,6 +613,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Palette.muted,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     textTransform: 'uppercase',
   },
   rewardPoints: {
@@ -645,6 +651,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.muted,
     marginBottom: Spacing.space2,
   },
@@ -666,6 +673,7 @@ const styles = StyleSheet.create({
   },
   memberEmoji: {
     fontSize: 16,
+    fontFamily: FontFamily.regular,
   },
   memberInfo: {
     flex: 1,
@@ -696,6 +704,7 @@ const styles = StyleSheet.create({
   },
   ruleBullet: {
     fontSize: 14,
+    fontFamily: FontFamily.regular,
     color: Palette.forest,
     lineHeight: 18,
   },
@@ -717,6 +726,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.muted,
     marginBottom: 2,
   },
@@ -742,6 +752,7 @@ const styles = StyleSheet.create({
   },
   participantEmoji: {
     fontSize: 15,
+    fontFamily: FontFamily.regular,
   },
   participantInfo: {
     flex: 1,

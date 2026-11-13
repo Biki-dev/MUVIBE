@@ -30,9 +30,25 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# ──────────────────────────────────────────────────────────────
+# Secrets. Never commit these.
+# ──────────────────────────────────────────────────────────────
+# .env holds EXPO_PUBLIC_SUPABASE_URL and the anon key. The anon key is
+# the publishable client key and is protected by row level security, but
+# it still identifies your project, so keep it out of the repo. Share it
+# through .env.example and a password manager, never a commit.
 .env
+.env.*
+!.env.example
+
+# A service_role key must never be in this repo at all, not even in an
+# ignored file: it bypasses every RLS policy.
+
+# EAS / Expo credentials
+credentials.json
+google-services.json
+GoogleService-Info.plist
+*.keystore
 
 # typescript
 *.tsbuildinfo
@@ -44,3 +60,20 @@ example
 /android
 
 .tools/
+
+# ──────────────────────────────────────────────────────────────
+# Local only
+# ──────────────────────────────────────────────────────────────
+# Offline snapshot written at runtime on device, never in the repo.
+muvibe-cache.json
+
+# Editor and OS noise
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+Thumbs.db
+
+# Local scratch
+*.local
+coverage/

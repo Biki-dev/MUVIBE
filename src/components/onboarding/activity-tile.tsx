@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { ActivityItem } from '@/types/club';
 import { AppIcon } from '@/components/ui/icon';
 
@@ -98,6 +98,7 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: 18,
+    fontFamily: FontFamily.regular,
   },
   checkbox: {
     width: 20,
@@ -128,6 +129,7 @@ const styles = StyleSheet.create({
   selectedTitle: {
     color: Palette.ink,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   pressed: {
     opacity: 0.85,

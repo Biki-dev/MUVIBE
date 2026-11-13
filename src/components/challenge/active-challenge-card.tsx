@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { Challenge } from '@/types/challenge';
 
@@ -111,6 +111,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 10.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.muted,
     letterSpacing: 0.4,
   },
@@ -129,6 +130,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   progressLabelRow: {
@@ -142,6 +144,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Palette.muted,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
   },
   progressValue: {
     ...Typography.supporting,
@@ -150,6 +153,7 @@ const styles = StyleSheet.create({
   },
   progressHighlight: {
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   progressBarTrack: {
@@ -174,6 +178,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.forest,
   },
   actionWrap: {
@@ -185,6 +190,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
 });

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import * as Location from 'expo-location';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { ProgressHeader } from '@/components/onboarding/progress-header';
 import { Button } from '@/components/ui/button';
 import { AppIcon } from '@/components/ui/icon';
@@ -12,13 +13,34 @@ export default function LocationPermissionScreen() {
   const router = useRouter();
   const { profile, setLocationPermission } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [denied, setDenied] = useState(false);
 
+  /**
+   * Actually asks the operating system. This screen used to just set a
+   * boolean and move on, so the system prompt never appeared and the app
+   * believed it had permission it had never been granted.
+   */
   const handleEnableLocation = async () => {
     setIsProcessing(true);
-    // In React Native / Expo, this handles contextual permission grant
-    await setLocationPermission(true);
-    setIsProcessing(false);
-    router.push('/onboarding/clubs');
+    setDenied(false);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      const granted = status === 'granted';
+      await setLocationPermission(granted);
+
+      if (!granted) {
+        // Stay put and explain, rather than pretending it worked.
+        setDenied(true);
+        return;
+      }
+      router.push('/onboarding/clubs');
+    } catch (error) {
+      console.warn('[onboarding] location request failed:', error);
+      await setLocationPermission(false);
+      setDenied(true);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleNotNow = async () => {
@@ -107,6 +129,16 @@ export default function LocationPermissionScreen() {
 
       {/* Sticky bottom buttons — always visible, never inside ScrollView */}
       <View style={styles.bottomBar}>
+        {denied && (
+          <View style={styles.deniedRow}>
+            <AppIcon name="alert-circle" size={15} color={Palette.amber} />
+            <Text style={styles.deniedText}>
+              Location is off. You can still use MUVIBE: distance falls back to
+              step estimates, and Near Me uses your campus. Turn it on in
+              Settings whenever you like.
+            </Text>
+          </View>
+        )}
         <Button
           label="Enable location"
           variant="primary"
@@ -142,6 +174,21 @@ const styles = StyleSheet.create({
     maxWidth: 500,
     width: '100%',
     alignSelf: 'center',
+  },
+  deniedRow: {
+    flexDirection: 'row',
+    gap: Spacing.space2,
+    alignItems: 'flex-start',
+    backgroundColor: Palette.surfaceSubtle,
+    borderRadius: Radius.sm,
+    padding: Spacing.space3,
+    marginBottom: Spacing.space3,
+  },
+  deniedText: {
+    ...Typography.supporting,
+    color: Palette.muted,
+    flex: 1,
+    lineHeight: 17,
   },
   bottomBar: {
     paddingHorizontal: Spacing.space4,
@@ -216,6 +263,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     fontSize: 11.5,
   },
   textBlock: {

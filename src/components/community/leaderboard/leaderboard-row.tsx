@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { IndividualRankItem } from '@/types/community';
 import { AppIcon } from '@/components/ui/icon';
 
@@ -108,6 +108,7 @@ const styles = StyleSheet.create({
   currentUserText: {
     color: Palette.forest,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   movementWrap: {
     flexDirection: 'row',
@@ -118,15 +119,18 @@ const styles = StyleSheet.create({
   movementTextUp: {
     fontSize: 9.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
   movementTextDown: {
     fontSize: 9.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.coral,
   },
   movementSame: {
     fontSize: 11,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
   },
   avatarCircle: {
@@ -138,6 +142,7 @@ const styles = StyleSheet.create({
   },
   avatarEmoji: {
     fontSize: 17,
+    fontFamily: FontFamily.regular,
   },
   infoBlock: {
     flex: 1,
@@ -164,6 +169,7 @@ const styles = StyleSheet.create({
   youBadgeText: {
     fontSize: 9,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   subtext: {

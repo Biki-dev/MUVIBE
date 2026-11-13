@@ -11,7 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { StudentProfile } from '@/types/auth';
 import { UserConnectionItem, PublicUserProfile } from '@/types/profile';
@@ -485,11 +485,13 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
   pendingBannerAction: {
     fontSize: 12,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
     textDecorationLine: 'underline',
   },
@@ -515,6 +517,7 @@ const styles = StyleSheet.create({
   },
   avatarEmoji: {
     fontSize: 28,
+    fontFamily: FontFamily.regular,
   },
   nameBlock: {
     flex: 1,
@@ -523,6 +526,7 @@ const styles = StyleSheet.create({
     ...Typography.cardHeading,
     fontSize: 18,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
     marginBottom: 1,
   },
@@ -541,6 +545,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.forest,
   },
   // Instagram stats bar
@@ -561,6 +566,7 @@ const styles = StyleSheet.create({
     ...Typography.cardHeading,
     fontSize: 16,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   statLabel: {
@@ -586,6 +592,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Palette.ink,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
   },
   bioText: {
     ...Typography.body,
@@ -616,6 +623,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
   searchBtn: {
@@ -625,6 +633,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
   btnPressed: {
@@ -658,6 +667,7 @@ const styles = StyleSheet.create({
   },
   modalSubtitle: {
     fontSize: 11.5,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
     marginTop: 2,
   },
@@ -682,6 +692,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 13.5,
+    fontFamily: FontFamily.regular,
     color: Palette.ink,
     padding: 0,
   },
@@ -694,6 +705,7 @@ const styles = StyleSheet.create({
   },
   searchingText: {
     fontSize: 12,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
   },
   emptyWrap: {
@@ -708,6 +720,7 @@ const styles = StyleSheet.create({
   },
   emptySubtext: {
     fontSize: 12,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
     marginTop: 4,
     textAlign: 'center',
@@ -743,14 +756,17 @@ const styles = StyleSheet.create({
   userRowName: {
     fontSize: 13.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   userRowHandle: {
     fontSize: 11.5,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
   },
   userRowCollege: {
     fontSize: 11,
+    fontFamily: FontFamily.regular,
     color: Palette.forest,
     marginTop: 1,
   },
@@ -771,6 +787,7 @@ const styles = StyleSheet.create({
   followActionBtnText: {
     fontSize: 11.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
   followActionBtnTextSent: {
@@ -797,6 +814,7 @@ const styles = StyleSheet.create({
   acceptBtnText: {
     fontSize: 11.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
   rejectBtn: {
@@ -810,6 +828,7 @@ const styles = StyleSheet.create({
   rejectBtnText: {
     fontSize: 11.5,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
 });

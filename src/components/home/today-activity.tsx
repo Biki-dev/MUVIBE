@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { ActivityRecord } from '@/types/activity';
 
@@ -159,6 +159,7 @@ const styles = StyleSheet.create({
     color: Palette.ink,
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   sessionCount: {
     ...Typography.supporting,
@@ -177,6 +178,7 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   emptyBanner: {
     flexDirection: 'row',
@@ -192,10 +194,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   emptySubtext: {
     fontSize: 11.5,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
     marginTop: 2,
   },
@@ -208,6 +212,7 @@ const styles = StyleSheet.create({
   startBtnText: {
     fontSize: 11.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
   grid: {
@@ -251,6 +256,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.muted,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     fontSize: 12,
   },
   statLabelActive: {
@@ -267,15 +273,18 @@ const styles = StyleSheet.create({
     lineHeight: 30,
     color: Palette.white,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   statValueEmpty: {
     color: Palette.muted,
     fontSize: 20,
+    fontFamily: FontFamily.regular,
   },
   statUnit: {
     ...Typography.supporting,
     color: 'rgba(255,255,255,0.65)',
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
     fontSize: 11,
   },
 });
