@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
+import { useMemo } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 interface HomeHeaderProps {
   currentStreak?: number;
@@ -38,7 +38,7 @@ export function HomeHeader({ currentStreak = 0 }: HomeHeaderProps) {
     <View style={styles.header}>
       <View style={styles.greetBlock}>
         <Text style={styles.greetText}>
-          {greeting}, {firstName} 👋
+          {greeting}
         </Text>
         <Text style={styles.dateText}>{dateLabel}</Text>
       </View>
