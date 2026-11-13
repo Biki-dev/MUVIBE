@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { FitConnectLogo } from '@/components/brand/logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,7 @@ type AuthMode = 'welcome' | 'email_signup' | 'email_login';
 
 export default function WelcomeAuthScreen() {
   const router = useRouter();
-  const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
+  const { signInWithEmail, signUpWithEmail, signInWithGoogle, continueAsGuest } = useAuth();
 
   const [mode, setMode] = useState<AuthMode>('welcome');
   const [email, setEmail] = useState('');
@@ -38,17 +38,35 @@ export default function WelcomeAuthScreen() {
   const [showTermsModal, setShowTermsModal] = useState(false);
 
   const handleGoogleAuth = async () => {
+    setErrorMessage('');
     setIsSubmitting(true);
     try {
       const res = await signInWithGoogle();
       if (res.success) {
-        // Direct transition into the onboarding pipeline
         router.push('/onboarding/profile');
       } else {
-        setErrorMessage(res.error || 'Google sign-in failed');
+        setErrorMessage(res.error || 'Google sign-in failed.');
       }
-    } catch (err) {
-      setErrorMessage('Unable to connect to Google SSO.');
+    } catch {
+      setErrorMessage('Unable to reach Google sign-in.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Guest keeps everything on this phone: no account, no server.
+  const handleGuest = async () => {
+    setErrorMessage('');
+    setIsSubmitting(true);
+    try {
+      const res = await continueAsGuest();
+      if (res.success) {
+        router.push('/onboarding/profile');
+      } else {
+        setErrorMessage(res.error || 'Could not start a guest session.');
+      }
+    } catch {
+      setErrorMessage('Could not start a guest session.');
     } finally {
       setIsSubmitting(false);
     }
@@ -145,7 +163,37 @@ export default function WelcomeAuthScreen() {
           {/* Screen mode routing */}
           {mode === 'welcome' ? (
             <View style={styles.authButtonsContainer}>
-              {/* 5. Continue with Google */}
+              {/* 5. Continue as Guest: local only, nothing leaves the phone */}
+              <Button
+                label="Continue as Guest"
+                variant="primary"
+                size="md"
+                onPress={handleGuest}
+                loading={isSubmitting}
+                icon={<AppIcon name="person-outline" size={18} color={Palette.ink} />}
+              />
+
+              <Text style={styles.localNote}>
+                No email needed. Add one later to keep your progress.
+              </Text>
+
+              <View style={styles.dividerRow}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>or sign in to sync</Text>
+                <View style={styles.dividerLine} />
+              </View>
+
+              {/* 6. Sign in with Email (Supabase) */}
+              <Button
+                label="Sign in with Email"
+                variant="outline"
+                size="md"
+                onPress={() => setMode('email_signup')}
+                icon={<AppIcon name="mail-outline" size={18} color={Palette.forest} />}
+                style={styles.googleButton}
+              />
+
+              {/* 7. Sign in with Google (Supabase OAuth) */}
               <Button
                 label="Continue with Google"
                 variant="outline"
@@ -154,15 +202,6 @@ export default function WelcomeAuthScreen() {
                 loading={isSubmitting}
                 icon={<AppIcon name="logo-google" size={18} color="#EA4335" />}
                 style={styles.googleButton}
-              />
-
-              {/* 6. Continue with Email */}
-              <Button
-                label="Continue with Email"
-                variant="primary"
-                size="md"
-                onPress={() => setMode('email_signup')}
-                icon={<AppIcon name="mail-outline" size={18} color={Palette.ink} />}
               />
 
               {/* 7. Existing user login / new user signup switch */}
@@ -445,6 +484,7 @@ const styles = StyleSheet.create({
     color: Palette.white,
     fontSize: 11,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   statPill: {
     backgroundColor: 'rgba(197, 243, 107, 0.2)',
@@ -457,6 +497,7 @@ const styles = StyleSheet.create({
     color: Palette.lime,
     fontSize: 11,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   textBlock: {
     alignItems: 'center',
@@ -491,6 +532,7 @@ const styles = StyleSheet.create({
     color: Palette.coral,
     flex: 1,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
   },
   authButtonsContainer: {
     width: '100%',
@@ -498,6 +540,27 @@ const styles = StyleSheet.create({
   },
   googleButton: {
     borderColor: Palette.border,
+  },
+  localNote: {
+    ...Typography.supporting,
+    color: Palette.muted,
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.space3,
+    marginVertical: Spacing.space1,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Palette.border,
+  },
+  dividerText: {
+    ...Typography.supporting,
+    color: Palette.muted,
   },
   switchRow: {
     flexDirection: 'row',
@@ -514,6 +577,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   formCard: {
     width: '100%',
@@ -537,6 +601,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.muted,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   forgotPasswordButton: {
     alignSelf: 'flex-end',
@@ -546,6 +611,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.electricBlue,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   submitButton: {
     marginTop: Spacing.space2,
@@ -571,6 +637,7 @@ const styles = StyleSheet.create({
   termsLink: {
     color: Palette.forest,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     textDecorationLine: 'underline',
   },
   modalOverlay: {

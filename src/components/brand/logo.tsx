@@ -8,7 +8,7 @@ import Animated, {
   withSequence,
   Easing,
 } from 'react-native-reanimated';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 
 interface FitConnectLogoProps {
@@ -161,19 +161,23 @@ const styles = StyleSheet.create({
     fontSize: 26,
     color: Palette.forest,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     letterSpacing: -0.5,
   },
   brandTextLg: {
     fontSize: 32,
+    fontFamily: FontFamily.regular,
     lineHeight: 38,
   },
   brandTextSm: {
     fontSize: 18,
+    fontFamily: FontFamily.regular,
     lineHeight: 22,
   },
   brandAccent: {
     color: Palette.ink,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   tagline: {
     ...Typography.body,
@@ -181,13 +185,16 @@ const styles = StyleSheet.create({
     color: Palette.muted,
     marginTop: Spacing.space1,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
     textAlign: 'center',
   },
   taglineLg: {
     fontSize: 15,
+    fontFamily: FontFamily.regular,
   },
   taglineSm: {
     fontSize: 12,
+    fontFamily: FontFamily.regular,
   },
   activityLineContainer: {
     marginTop: Spacing.space6,

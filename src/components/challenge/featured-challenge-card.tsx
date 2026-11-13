@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { Challenge } from '@/types/challenge';
 
@@ -159,6 +159,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 10.5,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
     letterSpacing: 0.5,
   },
@@ -172,6 +173,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.white,
   },
   title: {
@@ -180,6 +182,7 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     color: Palette.white,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     marginBottom: 6,
   },
   description: {
@@ -258,12 +261,14 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   joinTextActive: {
     ...Typography.supporting,
     fontSize: 12.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
 });

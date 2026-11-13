@@ -11,6 +11,7 @@ import { evaluateAchievements, fetchUserSocialStats } from '@/services/profile-s
 import { ActivityRecord, StreakInfo } from '@/types/activity';
 import { ProfileFitnessOverview, UserConnectionItem } from '@/types/profile';
 
+import { RankCard } from '@/components/game/rank-card';
 import { ProfileHeader } from '@/components/profile/profile-header';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { FitnessOverview } from '@/components/profile/fitness-overview';
@@ -120,7 +121,10 @@ export default function ProfileScreen() {
           onRefreshSocial={loadData}
         />
 
-        {/* Section 3 — Fitness Overview (real data) */}
+        {/* Section 3 — Rank, XP and tier. The hero of this screen. */}
+        <RankCard />
+
+        {/* Section 4 — Fitness Overview (real data) */}
         <FitnessOverview overview={fitnessOverview} />
 
         {/* Section 4 — Activity Streak (Your Consistency) */}

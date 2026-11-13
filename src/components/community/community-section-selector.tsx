@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { CommunitySection } from '@/context/community-context';
 import { AppIcon } from '@/components/ui/icon';
 
@@ -81,10 +81,12 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12.5,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
   tabTextActive: {
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
 });

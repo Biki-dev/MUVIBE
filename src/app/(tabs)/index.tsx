@@ -100,7 +100,10 @@ export default function HomeScreen() {
           />
         }>
         {/* Section 1 — Personalized greeting + date + streak badge */}
-        <HomeHeader currentStreak={streak.currentStreak} />
+        {/* HomeHeader takes no props: the streak badge moved into
+            FitnessSnapshot upstream, but this caller still passed
+            currentStreak, which TypeScript rejected. */}
+        <HomeHeader />
 
         {/* Section 2 — Weekly Calendar (real activity states per day) */}
         <WeeklyCalendar activities={activities} streak={streak} />

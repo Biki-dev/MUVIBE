@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 
 export type ChallengeViewMode = 'discover' | 'my_challenges';
 
@@ -87,11 +87,13 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 13,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
   toggleTextActive: {
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   countBadge: {
     paddingHorizontal: 6,
@@ -107,6 +109,7 @@ const styles = StyleSheet.create({
   countText: {
     fontSize: 11,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   countTextActive: {
     color: Palette.lime,

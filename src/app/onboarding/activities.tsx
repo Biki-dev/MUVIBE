@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { ProgressHeader } from '@/components/onboarding/progress-header';
 import { ActivityTile } from '@/components/onboarding/activity-tile';
 import { Button } from '@/components/ui/button';
@@ -138,6 +138,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.lime,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     fontSize: 11.5,
   },
   subtitle: {
@@ -184,6 +185,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.muted,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     fontSize: 13.5,
   },
   pressed: {

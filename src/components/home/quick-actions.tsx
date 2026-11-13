@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 
 interface QuickActionsProps {
@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
     color: Palette.ink,
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   seeMoreBtn: {
     flexDirection: 'row',
@@ -133,6 +134,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     fontSize: 12.5,
   },
   grid: {
@@ -169,6 +171,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
     textAlign: 'center',
   },

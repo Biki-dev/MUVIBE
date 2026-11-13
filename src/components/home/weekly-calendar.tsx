@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { ActivityRecord, StreakInfo } from '@/types/activity';
 
@@ -165,6 +165,7 @@ const styles = StyleSheet.create({
     ...Typography.cardHeading,
     fontSize: 14,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   weekSubtitle: {
@@ -184,6 +185,7 @@ const styles = StyleSheet.create({
   streakText: {
     fontSize: 11.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
   daysRow: {
@@ -199,12 +201,14 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
     marginBottom: Spacing.space1 + 2,
   },
   dayLabelToday: {
     color: Palette.forest,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   dateCircle: {
     width: 36,
@@ -233,6 +237,7 @@ const styles = StyleSheet.create({
   dateTextCompleted: {
     color: Palette.ink,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   dateTextMissed: {
     color: Palette.muted,
@@ -240,6 +245,7 @@ const styles = StyleSheet.create({
   dateTextToday: {
     color: Palette.ink,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   dotContainer: {
     height: 6,

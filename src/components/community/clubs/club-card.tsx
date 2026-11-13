@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { CommunityClub } from '@/types/community';
 
@@ -180,6 +180,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
   description: {
@@ -207,6 +208,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Palette.muted,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
   },
   actionRow: {
     flexDirection: 'row',
@@ -231,12 +233,14 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   joinTextActive: {
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
 });

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { StreakInfo } from '@/types/activity';
 
@@ -149,6 +149,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 9.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.muted,
     letterSpacing: 0.5,
     marginBottom: 4,
@@ -168,6 +169,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 10,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.muted,
   },
   statDivider: {
@@ -182,6 +184,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
     marginBottom: Spacing.space2,
   },
@@ -199,11 +202,13 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Palette.muted,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
     marginBottom: 4,
   },
   dayLabelToday: {
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   circle: {
     width: 30,
@@ -231,10 +236,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Palette.muted,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   dateNumToday: {
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   dateNumMissed: {
     color: Palette.borderDark || '#8A978E',

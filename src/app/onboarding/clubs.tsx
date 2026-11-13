@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { ProgressHeader } from '@/components/onboarding/progress-header';
 import { ClubCard } from '@/components/onboarding/club-card';
 import { Button } from '@/components/ui/button';
@@ -366,6 +366,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     fontSize: 11.5,
   },
   title: {
@@ -426,6 +427,7 @@ const styles = StyleSheet.create({
   filterChipText: {
     ...Typography.supporting,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.ink,
   },
   filterChipTextActive: {
@@ -476,6 +478,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.muted,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     fontSize: 13.5,
   },
   pressed: {

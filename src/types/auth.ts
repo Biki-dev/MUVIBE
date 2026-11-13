@@ -1,4 +1,4 @@
-export type AuthProvider = 'email' | 'google';
+export type AuthProvider = 'email' | 'google' | 'guest';
 
 export interface User {
   id: string;

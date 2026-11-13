@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/auth-context';
@@ -317,6 +317,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.muted,
     letterSpacing: 0.6,
     marginBottom: Spacing.space3,
@@ -345,12 +346,14 @@ const styles = StyleSheet.create({
   },
   avatarEmoji: {
     fontSize: 24,
+    fontFamily: FontFamily.regular,
   },
   avatarLabel: {
     ...Typography.supporting,
     fontSize: 11,
     color: Palette.ink,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   formGroup: {
     marginBottom: Spacing.space4,
@@ -359,6 +362,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12.5,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.ink,
     marginBottom: 6,
   },
@@ -438,6 +442,7 @@ const styles = StyleSheet.create({
   interestTextActive: {
     color: Palette.ink,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   bottomBar: {
     paddingHorizontal: Spacing.space4,

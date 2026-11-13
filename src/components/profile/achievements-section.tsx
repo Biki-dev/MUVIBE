@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { AchievementBadge } from '@/types/profile';
 
@@ -121,6 +121,7 @@ const styles = StyleSheet.create({
   countPillText: {
     fontSize: 10.5,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.lime,
   },
   subtitle: {
@@ -139,6 +140,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     fontSize: 12.5,
   },
   badgesRow: {
@@ -189,6 +191,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
     textAlign: 'center',
     width: '100%',
@@ -196,6 +199,7 @@ const styles = StyleSheet.create({
   badgeTitleLocked: {
     color: Palette.muted,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
   },
   badgeProgressText: {
     ...Typography.supporting,

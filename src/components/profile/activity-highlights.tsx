@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { ActivityRecord } from '@/types/activity';
 
@@ -164,6 +164,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 9.5,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
     letterSpacing: 0.5,
     marginBottom: 2,

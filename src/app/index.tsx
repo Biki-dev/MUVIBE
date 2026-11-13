@@ -8,12 +8,20 @@ import { useAuth } from '@/context/auth-context';
 
 export default function SplashScreen() {
   const router = useRouter();
-  const { isCheckingSession, hasValidSession, isOnboardingCompleted, getNextOnboardingRoute } =
-    useAuth();
+  const {
+    isCheckingSession,
+    hasValidSession,
+    hasSeenIntro,
+    isOnboardingCompleted,
+    getNextOnboardingRoute,
+  } = useAuth();
 
   useEffect(() => {
     if (!isCheckingSession) {
-      if (hasValidSession && isOnboardingCompleted) {
+      if (!hasSeenIntro && !hasValidSession) {
+        // First install → intro slides, then Guest / Sign in
+        router.replace('/intro' as any);
+      } else if (hasValidSession && isOnboardingCompleted) {
         // Valid session + completed onboarding → Home
         router.replace('/(tabs)');
       } else if (hasValidSession && !isOnboardingCompleted) {
@@ -25,7 +33,14 @@ export default function SplashScreen() {
         router.replace('/auth');
       }
     }
-  }, [isCheckingSession, hasValidSession, isOnboardingCompleted, router, getNextOnboardingRoute]);
+  }, [
+    isCheckingSession,
+    hasValidSession,
+    hasSeenIntro,
+    isOnboardingCompleted,
+    router,
+    getNextOnboardingRoute,
+  ]);
 
   return (
     <SafeAreaView style={styles.container}>

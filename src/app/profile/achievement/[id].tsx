@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { getAllActivities } from '@/services/activity-storage';
@@ -274,6 +274,7 @@ const styles = StyleSheet.create({
   unlockedStatusText: {
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
   lockedStatusWrap: {
@@ -288,6 +289,7 @@ const styles = StyleSheet.create({
   lockedStatusText: {
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
   sectionCard: {
@@ -319,6 +321,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   progressBarTrack: {

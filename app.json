@@ -19,10 +19,15 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.ACTIVITY_RECOGNITION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
-      "output": "static",
+      "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -33,6 +38,18 @@
           "backgroundColor": "#007853",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 160
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "MUVIBE uses your location to measure distance and draw your route while you track a walk, run, ride or hike."
+        }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "MUVIBE counts your steps with the phone's pedometer while you track a walk or run."
         }
       ]
     ],

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { ActivityStats, PeriodType } from '@/types/activity';
 import { formatDuration } from '@/services/activity-stats';
@@ -200,11 +200,13 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
   segmentTextActive: {
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   primaryGrid: {
     flexDirection: 'row',
@@ -241,6 +243,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.muted,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
     fontSize: 12,
     flexShrink: 1,
   },
@@ -270,6 +273,7 @@ const styles = StyleSheet.create({
   breakdownHeader: {
     ...Typography.supporting,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.muted,
     fontSize: 11.5,
     textTransform: 'uppercase',

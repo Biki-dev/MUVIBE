@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { getAllActivities } from '@/services/activity-storage';
 import { computeStreak } from '@/services/activity-stats';
@@ -203,6 +203,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 13,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
   },
   scrollContent: {
@@ -268,11 +269,13 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.ink,
   },
   filterTextActive: {
     color: Palette.white,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   badgesList: {
     gap: Spacing.space3,
@@ -333,6 +336,7 @@ const styles = StyleSheet.create({
   unlockedTagText: {
     fontSize: 10,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
   lockedTag: {
@@ -344,6 +348,7 @@ const styles = StyleSheet.create({
   lockedTagText: {
     fontSize: 10,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
   badgeDescription: {
@@ -358,6 +363,7 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     color: Palette.forest,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   reqText: {
     ...Typography.supporting,

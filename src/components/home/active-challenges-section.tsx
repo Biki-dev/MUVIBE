@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 
 interface Challenge {
@@ -147,6 +147,7 @@ const styles = StyleSheet.create({
     color: Palette.ink,
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   seeAllBtn: {
     flexDirection: 'row',
@@ -157,6 +158,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     fontSize: 12.5,
   },
   scrollRow: {
@@ -197,15 +199,18 @@ const styles = StyleSheet.create({
   diffText: {
     fontSize: 10,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   cardTitle: {
     fontSize: 13,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
     lineHeight: 17,
   },
   goalText: {
     fontSize: 11.5,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
   },
   footerRow: {
@@ -223,6 +228,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Palette.muted,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   daysLeftBadge: {
     backgroundColor: 'rgba(197, 243, 107, 0.3)',
@@ -236,6 +242,7 @@ const styles = StyleSheet.create({
   daysLeftText: {
     fontSize: 10,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
   daysLeftTextEnded: {

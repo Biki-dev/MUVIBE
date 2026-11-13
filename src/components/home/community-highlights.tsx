@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/auth-context';
@@ -203,6 +203,7 @@ const styles = StyleSheet.create({
     color: Palette.ink,
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   seeAllBtn: {
     flexDirection: 'row',
@@ -213,6 +214,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     fontSize: 12.5,
   },
   scrollContent: {
@@ -243,6 +245,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 13,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   infoBlock: {
     gap: 2,
@@ -250,6 +253,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   activityRow: {
@@ -260,16 +264,19 @@ const styles = StyleSheet.create({
   activityType: {
     fontSize: 11,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.muted,
   },
   activityInfo: {
     fontSize: 11.5,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
   },
   timeAgo: {
     fontSize: 10.5,
     color: Palette.muted,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
     marginTop: 2,
   },
 });

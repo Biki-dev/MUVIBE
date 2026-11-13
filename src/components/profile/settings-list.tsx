@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { useAuth } from '@/context/auth-context';
 
@@ -157,6 +157,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 10.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.muted,
     letterSpacing: 0.6,
     paddingHorizontal: Spacing.space3 + 2,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { ChallengeDifficulty } from '@/types/challenge';
 
 export type DifficultyFilterType = 'all' | ChallengeDifficulty;
@@ -71,10 +71,12 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
   chipTextActive: {
     color: Palette.white,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
 });

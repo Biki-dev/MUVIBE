@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { useChallenges } from '@/context/challenge-context';
 import { ChallengeCategory } from '@/types/challenge';
 import { ChallengeHeader } from '@/components/challenge/challenge-header';
@@ -256,10 +256,12 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
   subTabTextActive: {
     color: Palette.white,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
 });
