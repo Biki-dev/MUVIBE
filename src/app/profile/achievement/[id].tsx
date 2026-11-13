@@ -1,17 +1,57 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
-import { INITIAL_ACHIEVEMENTS } from '@/constants/profile-data';
+import { getAllActivities } from '@/services/activity-storage';
+import { computeStreak } from '@/services/activity-stats';
+import { evaluateAchievements } from '@/services/profile-service';
+import { useCommunity } from '@/context/community-context';
+import { AchievementBadge } from '@/types/profile';
 
 export default function AchievementDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string }>();
+  const { myClubs } = useCommunity();
 
-  const badge = INITIAL_ACHIEVEMENTS.find((b) => b.id === params.id);
+  const [badge, setBadge] = useState<AchievementBadge | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      setIsLoading(true);
+      const activities = await getAllActivities();
+      const streak = computeStreak(activities);
+      const evaluated = evaluateAchievements({
+        activities,
+        streak,
+        clubsCount: myClubs.length,
+      });
+      const found = evaluated.find((b) => b.id === params.id);
+      setBadge(found || null);
+      setIsLoading(false);
+    }
+    load();
+  }, [params.id, myClubs.length]);
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.topHeader}>
+          <Pressable onPress={() => router.back()} style={styles.backButton} hitSlop={10}>
+            <AppIcon name="arrow-back" size={24} color={Palette.ink} />
+          </Pressable>
+          <Text style={styles.topHeaderTitle}>Achievement Details</Text>
+          <View style={{ width: 36 }} />
+        </View>
+        <View style={styles.centerLoading}>
+          <ActivityIndicator size="large" color={Palette.forest} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!badge) {
     return (
@@ -32,7 +72,7 @@ export default function AchievementDetailScreen() {
   }
 
   const progressPercent =
-    badge.currentProgress && badge.targetGoal
+    badge.currentProgress !== undefined && badge.targetGoal
       ? Math.min(100, Math.round((badge.currentProgress / badge.targetGoal) * 100))
       : badge.unlocked
       ? 100
@@ -71,61 +111,66 @@ export default function AchievementDetailScreen() {
           <Text style={styles.badgeTitle}>{badge.title}</Text>
           <Text style={styles.badgeDescription}>{badge.description}</Text>
 
-          <View
-            style={[
-              styles.statusPill,
-              badge.unlocked ? styles.statusPillUnlocked : styles.statusPillLocked,
-            ]}>
-            <AppIcon
-              name={badge.unlocked ? 'checkmark-circle' : 'lock-closed'}
-              size={14}
-              color={badge.unlocked ? Palette.forest : Palette.muted}
-            />
-            <Text
-              style={[
-                styles.statusPillText,
-                badge.unlocked ? styles.statusTextUnlocked : styles.statusTextLocked,
-              ]}>
-              {badge.unlocked
-                ? `Unlocked on ${badge.unlockedDate}`
-                : 'Locked Milestone'}
-            </Text>
-          </View>
-        </View>
-
-        {/* Unlock Requirement Card */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionHeading}>Unlock Requirement</Text>
-          <Text style={styles.requirementText}>{badge.unlockRequirement}</Text>
-
-          {badge.currentProgress !== undefined && badge.targetGoal !== undefined && (
-            <View style={styles.progressBox}>
-              <View style={styles.progressLabelRow}>
-                <Text style={styles.progressLabel}>Current Progress</Text>
-                <Text style={styles.progressValue}>
-                  {badge.currentProgress.toLocaleString()} /{' '}
-                  {badge.targetGoal.toLocaleString()} {badge.unit}
-                </Text>
+          {badge.unlocked ? (
+            <View style={styles.unlockedStatusWrap}>
+              <View style={styles.checkIconWrap}>
+                <AppIcon name="checkmark" size={14} color={Palette.forest} />
               </View>
-
-              <View style={styles.progressBarTrack}>
-                <View
-                  style={[
-                    styles.progressBarFill,
-                    { width: `${progressPercent}%` },
-                    badge.unlocked && styles.progressFillUnlocked,
-                  ]}
-                />
-              </View>
-              <Text style={styles.progressPercent}>{progressPercent}% completed</Text>
+              <Text style={styles.unlockedStatusText}>
+                Unlocked {badge.unlockedDate ? `• ${badge.unlockedDate}` : ''}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.lockedStatusWrap}>
+              <AppIcon name="lock-closed" size={14} color={Palette.muted} />
+              <Text style={styles.lockedStatusText}>Badge Locked</Text>
             </View>
           )}
         </View>
-      </ScrollView>
 
-      <View style={styles.bottomBar}>
-        <Button label="Done" variant="primary" size="lg" onPress={() => router.back()} />
-      </View>
+        {/* Progress Breakdown */}
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionHeading}>Progress & Milestones</Text>
+
+          <View style={styles.progressRow}>
+            <Text style={styles.progressLabel}>Current Progress</Text>
+            <Text style={styles.progressValues}>
+              {badge.currentProgress || 0} / {badge.targetGoal || 1} {badge.unit}
+            </Text>
+          </View>
+
+          <View style={styles.progressBarTrack}>
+            <View
+              style={[
+                styles.progressBarFill,
+                {
+                  width: `${progressPercent}%`,
+                  backgroundColor: badge.unlocked ? Palette.forest : Palette.amber,
+                },
+              ]}
+            />
+          </View>
+          <Text style={styles.percentText}>{progressPercent}% completed</Text>
+        </View>
+
+        {/* Unlock Requirement Info */}
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionHeading}>How to Unlock</Text>
+          <View style={styles.reqBlock}>
+            <AppIcon name="information-circle-outline" size={18} color={Palette.forest} />
+            <Text style={styles.reqDetailText}>{badge.unlockRequirement}</Text>
+          </View>
+        </View>
+
+        {/* Action Button */}
+        <View style={styles.buttonWrap}>
+          <Button
+            label="Back to Achievements"
+            variant="outline"
+            onPress={() => router.back()}
+          />
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -141,34 +186,28 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.space4,
     paddingVertical: Spacing.space3,
-    backgroundColor: Palette.white,
     borderBottomWidth: 1,
     borderBottomColor: Palette.border,
+    backgroundColor: Palette.white,
   },
   backButton: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 4,
   },
   topHeaderTitle: {
     ...Typography.sectionHeading,
     fontSize: 16,
     color: Palette.ink,
+    maxWidth: 240,
   },
-  notFoundContainer: {
-    padding: Spacing.space6,
+  centerLoading: {
+    flex: 1,
     alignItems: 'center',
-  },
-  notFoundText: {
-    ...Typography.body,
-    color: Palette.muted,
-    marginBottom: Spacing.space4,
+    justifyContent: 'center',
   },
   scrollContent: {
     paddingHorizontal: Spacing.space4,
     paddingTop: Spacing.space4,
-    paddingBottom: Spacing.space6,
+    paddingBottom: Spacing.space8,
     maxWidth: 600,
     width: '100%',
     alignSelf: 'center',
@@ -178,7 +217,8 @@ const styles = StyleSheet.create({
     borderRadius: Radius.card,
     borderWidth: 1,
     borderColor: Palette.border,
-    padding: Spacing.space5,
+    paddingVertical: Spacing.space5,
+    paddingHorizontal: Spacing.space4,
     alignItems: 'center',
     marginBottom: Spacing.space4,
   },
@@ -190,55 +230,64 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: Spacing.space3,
     shadowColor: '#000',
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 4,
   },
   bigIconCircleLocked: {
-    backgroundColor: Palette.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: Palette.border,
+    backgroundColor: '#EBEFEB',
   },
   badgeTitle: {
-    ...Typography.cardHeading,
+    ...Typography.pageTitle,
     fontSize: 20,
     color: Palette.ink,
-    marginBottom: 6,
     textAlign: 'center',
+    marginBottom: 4,
   },
   badgeDescription: {
     ...Typography.body,
-    fontSize: 13.5,
+    fontSize: 13,
     color: Palette.muted,
     textAlign: 'center',
-    lineHeight: 19,
-    marginBottom: Spacing.space4,
-    maxWidth: 300,
+    lineHeight: 18,
+    maxWidth: 280,
+    marginBottom: Spacing.space3,
   },
-  statusPill: {
+  unlockedStatusWrap: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    backgroundColor: Palette.lime,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: Radius.full,
   },
-  statusPillUnlocked: {
-    backgroundColor: 'rgba(197, 243, 107, 0.35)',
+  checkIconWrap: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: 'rgba(24, 53, 45, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  statusPillLocked: {
-    backgroundColor: Palette.surfaceSubtle,
-  },
-  statusPillText: {
-    ...Typography.supporting,
+  unlockedStatusText: {
     fontSize: 12,
     fontWeight: '700',
-  },
-  statusTextUnlocked: {
     color: Palette.forest,
   },
-  statusTextLocked: {
+  lockedStatusWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: Palette.surfaceSubtle,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: Radius.full,
+  },
+  lockedStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
     color: Palette.muted,
   },
   sectionCard: {
@@ -247,73 +296,75 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Palette.border,
     padding: Spacing.space4,
-    marginBottom: Spacing.space4,
-  },
-  sectionHeading: {
-    ...Typography.cardHeading,
-    fontSize: 14.5,
-    color: Palette.ink,
-    marginBottom: Spacing.space2,
-  },
-  requirementText: {
-    ...Typography.body,
-    fontSize: 13,
-    color: Palette.muted,
-    lineHeight: 18,
     marginBottom: Spacing.space3,
   },
-  progressBox: {
-    backgroundColor: Palette.surfaceHighlight,
-    borderRadius: Radius.sm,
-    padding: Spacing.space3,
-    borderWidth: 1,
-    borderColor: Palette.border,
+  sectionHeading: {
+    ...Typography.sectionHeading,
+    fontSize: 14,
+    color: Palette.ink,
+    marginBottom: Spacing.space3,
   },
-  progressLabelRow: {
+  progressRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 6,
   },
   progressLabel: {
     ...Typography.supporting,
-    fontSize: 11.5,
+    fontSize: 12,
     color: Palette.muted,
   },
-  progressValue: {
-    ...Typography.bodyBold,
-    fontSize: 12,
+  progressValues: {
+    ...Typography.supporting,
+    fontSize: 12.5,
+    fontWeight: '700',
     color: Palette.ink,
   },
   progressBarTrack: {
     height: 8,
-    borderRadius: Radius.full,
+    borderRadius: 4,
     backgroundColor: Palette.surfaceSubtle,
     overflow: 'hidden',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: Palette.forest,
-    borderRadius: Radius.full,
+    borderRadius: 4,
   },
-  progressFillUnlocked: {
-    backgroundColor: Palette.lime,
-  },
-  progressPercent: {
+  percentText: {
     ...Typography.supporting,
     fontSize: 11,
     color: Palette.muted,
     textAlign: 'right',
   },
-  bottomBar: {
-    paddingHorizontal: Spacing.space4,
-    paddingTop: Spacing.space3,
-    paddingBottom: Spacing.space4,
-    backgroundColor: Palette.white,
-    borderTopWidth: 1,
-    borderTopColor: Palette.border,
-    maxWidth: 600,
-    width: '100%',
-    alignSelf: 'center',
+  reqBlock: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'flex-start',
+    backgroundColor: Palette.surfaceSubtle,
+    borderRadius: Radius.sm,
+    padding: Spacing.space3,
+  },
+  reqDetailText: {
+    ...Typography.body,
+    fontSize: 12.5,
+    color: Palette.ink,
+    lineHeight: 18,
+    flex: 1,
+  },
+  buttonWrap: {
+    marginTop: Spacing.space4,
+  },
+  notFoundContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.space6,
+    gap: 16,
+  },
+  notFoundText: {
+    ...Typography.cardHeading,
+    color: Palette.muted,
   },
 });

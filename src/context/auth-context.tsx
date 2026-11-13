@@ -43,6 +43,7 @@ interface AuthContextType {
   signUpWithEmail: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   signInWithGoogle: () => Promise<{ success: boolean; error?: string }>;
   updateProfile: (updates: Partial<StudentProfile>) => Promise<void>;
+  refreshProfile: () => Promise<void>;
   toggleActivity: (activityId: string) => void;
   setActivities: (activityIds: string[]) => void;
   setLocationPermission: (enabled: boolean) => Promise<void>;
@@ -236,7 +237,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         academic_year: updated.academicYear,
         avatar_url: updated.avatarUrl,
         bio: updated.bio,
+        updated_at: new Date().toISOString(),
       });
+    }
+  };
+
+  const refreshProfile = async () => {
+    if (user) {
+      await loadProfileFromDB(user.id);
     }
   };
 
@@ -328,6 +336,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signUpWithEmail,
       signInWithGoogle,
       updateProfile,
+      refreshProfile,
       toggleActivity,
       setActivities,
       setLocationPermission,

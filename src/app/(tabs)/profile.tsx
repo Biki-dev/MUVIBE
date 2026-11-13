@@ -1,16 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { Palette, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useCommunity } from '@/context/community-context';
-import { useChallenges } from '@/context/challenge-context';
 import { getAllActivities } from '@/services/activity-storage';
 import { computeStreak } from '@/services/activity-stats';
+import { evaluateAchievements, fetchUserSocialStats } from '@/services/profile-service';
 import { ActivityRecord, StreakInfo } from '@/types/activity';
-import { ProfileFitnessOverview } from '@/types/profile';
-import { INITIAL_ACHIEVEMENTS } from '@/constants/profile-data';
+import { ProfileFitnessOverview, UserConnectionItem } from '@/types/profile';
 
 import { ProfileHeader } from '@/components/profile/profile-header';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
@@ -23,16 +22,34 @@ import { ActivityHighlights } from '@/components/profile/activity-highlights';
 import { SettingsList } from '@/components/profile/settings-list';
 
 export default function ProfileScreen() {
-  const { profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { myClubs } = useCommunity();
 
   const [activities, setActivities] = useState<ActivityRecord[]>([]);
+  const [socialStats, setSocialStats] = useState<{
+    followers: UserConnectionItem[];
+    following: UserConnectionItem[];
+    pendingIncoming: UserConnectionItem[];
+  }>({
+    followers: [],
+    following: [],
+    pendingIncoming: [],
+  });
 
-  // Load activities on screen focus to refresh statistics
   const loadData = useCallback(async () => {
+    // 1. Refresh profile from DB
+    await refreshProfile();
+
+    // 2. Fetch real activities
     const list = await getAllActivities();
     setActivities(list);
-  }, []);
+
+    // 3. Fetch social connections if user is logged in
+    if (user?.id) {
+      const social = await fetchUserSocialStats(user.id);
+      setSocialStats(social);
+    }
+  }, [user?.id, refreshProfile]);
 
   useFocusEffect(
     useCallback(() => {
@@ -40,14 +57,14 @@ export default function ProfileScreen() {
     }, [loadData])
   );
 
-  // Compute lifetime fitness overview
-  const fitnessOverview: ProfileFitnessOverview = React.useMemo(() => {
-    if (activities.length === 0) {
+  // Lifetime fitness overview — purely from real activities
+  const fitnessOverview: ProfileFitnessOverview = useMemo(() => {
+    if (!activities || activities.length === 0) {
       return {
-        activeMinutes: 2450,
-        totalDistanceKm: 86.4,
-        totalSteps: 124500,
-        totalActivities: 42,
+        activeMinutes: 0,
+        totalDistanceKm: 0,
+        totalSteps: 0,
+        totalActivities: 0,
       };
     }
 
@@ -61,39 +78,56 @@ export default function ProfileScreen() {
       if (act.steps) totalSteps += act.steps;
     }
 
-    // Blend with base baseline so newly created profile immediately has realistic student totals
     return {
-      activeMinutes: Math.round(totalDurationSec / 60) + 2150,
-      totalDistanceKm: Number((totalDistKm + 62.5).toFixed(1)),
-      totalSteps: totalSteps + 98000,
-      totalActivities: activities.length + 32,
+      activeMinutes: Math.round(totalDurationSec / 60),
+      totalDistanceKm: Number(totalDistKm.toFixed(1)),
+      totalSteps,
+      totalActivities: activities.length,
     };
   }, [activities]);
 
-  // Compute streak
-  const streakInfo: StreakInfo = React.useMemo(() => {
+  // Compute streak from real activities
+  const streakInfo: StreakInfo = useMemo(() => {
     return computeStreak(activities);
   }, [activities]);
+
+  // Dynamically evaluate achievements from real activities & clubs & social
+  const achievements = useMemo(() => {
+    return evaluateAchievements({
+      activities,
+      streak: streakInfo,
+      clubsCount: myClubs.length,
+      connectionsCount: socialStats.followers.length,
+    });
+  }, [activities, streakInfo, myClubs.length, socialStats.followers.length]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
-        {/* Section 1 — Page Header */}
+        {/* Section 1 — Page Header (no settings icon) */}
         <ProfileHeader />
 
-        {/* Section 2 — User Profile Card */}
-        <UserProfileCard profile={profile} />
+        {/* Section 2 — User Profile Card (with followers/following & search) */}
+        <UserProfileCard
+          profile={profile}
+          currentUserId={user?.id}
+          activitiesCount={activities.length}
+          followers={socialStats.followers}
+          following={socialStats.following}
+          pendingRequests={socialStats.pendingIncoming}
+          onRefreshSocial={loadData}
+        />
 
-        {/* Section 3 — Fitness Overview */}
+        {/* Section 3 — Fitness Overview (real data) */}
         <FitnessOverview overview={fitnessOverview} />
 
         {/* Section 4 — Activity Streak (Your Consistency) */}
         <ConsistencyCard streak={streakInfo} />
 
-        {/* Section 5 — Achievements & Badges */}
-        <AchievementsSection achievements={INITIAL_ACHIEVEMENTS} />
+        {/* Section 5 — Achievements & Badges (borderless icons, real logic) */}
+        <AchievementsSection achievements={achievements} />
 
         {/* Section 6 — My Clubs */}
         <MyClubsSection clubs={myClubs} />
@@ -101,8 +135,8 @@ export default function ProfileScreen() {
         {/* Section 7 — My Challenges */}
         <MyChallengesSection />
 
-        {/* Section 8 — Activity Highlights */}
-        <ActivityHighlights />
+        {/* Section 8 — Activity Highlights (real data) */}
+        <ActivityHighlights activities={activities} />
 
         {/* Section 9 — Settings & Account */}
         <SettingsList />

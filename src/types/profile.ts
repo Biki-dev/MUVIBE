@@ -27,3 +27,28 @@ export interface ProfileFitnessOverview {
   totalSteps: number;
   totalActivities: number;
 }
+
+export interface PublicUserProfile {
+  id: string;
+  email: string;
+  fullName: string;
+  username: string;
+  college: string;
+  department: string;
+  academicYear: string;
+  avatarUrl: string;
+  bio: string;
+  followersCount: number;
+  followingCount: number;
+}
+
+export interface UserConnectionItem {
+  id: string;
+  userId: string;
+  fullName: string;
+  username: string;
+  avatarUrl: string;
+  college: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: string;
+}

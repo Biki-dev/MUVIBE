@@ -39,17 +39,19 @@ const AVAILABLE_INTERESTS = [
 
 export default function EditProfileScreen() {
   const router = useRouter();
-  const { profile, updateProfile, selectedActivities } = useAuth();
+  const { user, profile, updateProfile, selectedActivities } = useAuth();
 
   const [avatar, setAvatar] = useState(profile.avatarUrl || 'av_runner');
-  const [fullName, setFullName] = useState(profile.fullName || 'Biki Kalita');
-  const [username, setUsername] = useState(profile.username || 'bikikalita');
-  const [college, setCollege] = useState(profile.college || 'Assam Engineering College');
-  const [department, setDepartment] = useState(profile.department || 'Mechanical Engineering');
-  const [academicYear, setAcademicYear] = useState(profile.academicYear || '2nd Year');
-  const [bio, setBio] = useState(
-    profile.bio || 'Building consistency, one activity at a time.'
+  const [fullName, setFullName] = useState(
+    profile.fullName || user?.name || user?.email?.split('@')[0] || ''
   );
+  const [username, setUsername] = useState(
+    profile.username || user?.email?.split('@')[0] || ''
+  );
+  const [college, setCollege] = useState(profile.college || 'Assam Engineering College');
+  const [department, setDepartment] = useState(profile.department || '');
+  const [academicYear, setAcademicYear] = useState(profile.academicYear || '');
+  const [bio, setBio] = useState(profile.bio || '');
   const [interests, setInterests] = useState<string[]>(
     selectedActivities.length > 0
       ? selectedActivities
@@ -76,17 +78,22 @@ export default function EditProfileScreen() {
     }
 
     setIsSaving(true);
-    await updateProfile({
-      fullName: fullName.trim(),
-      username: username.trim().toLowerCase().replace('@', ''),
-      college: college.trim(),
-      department: department.trim(),
-      academicYear: academicYear.trim(),
-      avatarUrl: avatar,
-      bio: bio.trim(),
-    });
-    setIsSaving(false);
-    router.back();
+    try {
+      await updateProfile({
+        fullName: fullName.trim(),
+        username: username.trim().toLowerCase().replace('@', ''),
+        college: college.trim(),
+        department: department.trim(),
+        academicYear: academicYear.trim(),
+        avatarUrl: avatar,
+        bio: bio.trim(),
+      });
+      router.back();
+    } catch (err: any) {
+      Alert.alert('Save Error', err?.message || 'Failed to update profile.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
@@ -12,14 +12,22 @@ interface AchievementsSectionProps {
 export function AchievementsSection({ achievements }: AchievementsSectionProps) {
   const router = useRouter();
 
-  const previewList = achievements.slice(0, 4);
+  const previewList = achievements.slice(0, 6);
+  const unlockedCount = achievements.filter((a) => a.unlocked).length;
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.headerRow}>
         <View style={styles.headerBlock}>
-          <Text style={styles.title}>Achievements</Text>
+          <View style={styles.titleWithBadge}>
+            <Text style={styles.title}>Achievements</Text>
+            <View style={styles.countPill}>
+              <Text style={styles.countPillText}>
+                {unlockedCount}/{achievements.length}
+              </Text>
+            </View>
+          </View>
           <Text style={styles.subtitle}>Every milestone deserves recognition.</Text>
         </View>
 
@@ -32,53 +40,51 @@ export function AchievementsSection({ achievements }: AchievementsSectionProps) 
         </Pressable>
       </View>
 
-      {/* Badges Grid (2x2 preview) */}
-      <View style={styles.grid}>
-        {previewList.map((badge) => (
-          <Pressable
-            key={badge.id}
-            onPress={() => router.push(`/profile/achievement/${badge.id}` as any)}
-            style={({ pressed }) => [
-              styles.badgeCard,
-              !badge.unlocked && styles.badgeCardLocked,
-              pressed && styles.cardPressed,
-            ]}>
-            <View
-              style={[
-                styles.iconWrap,
-                badge.unlocked
-                  ? { backgroundColor: badge.color }
-                  : styles.iconWrapLocked,
-              ]}>
-              <AppIcon
-                name={badge.unlocked ? badge.iconName : 'lock-closed'}
-                type={badge.iconType}
-                size={18}
-                color={badge.unlocked ? Palette.forest : Palette.muted}
-              />
-            </View>
+      {/* Borderless Badge Icons (pure emblems without card borders) */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.badgesRow}>
+        {previewList.map((badge) => {
+          const isUnlocked = badge.unlocked;
 
-            <View style={styles.textWrap}>
-              <View style={styles.titleRow}>
-                <Text
-                  style={[
-                    styles.badgeTitle,
-                    !badge.unlocked && styles.badgeTitleLocked,
-                  ]}
-                  numberOfLines={1}>
-                  {badge.title}
-                </Text>
-                {badge.unlocked && (
-                  <View style={styles.unlockedDot} />
-                )}
+          return (
+            <Pressable
+              key={badge.id}
+              onPress={() => router.push(`/profile/achievement/${badge.id}` as any)}
+              style={({ pressed }) => [styles.badgeItem, pressed && styles.badgeItemPressed]}>
+              {/* Circular Emblem — No borders, clean circular badge */}
+              <View
+                style={[
+                  styles.emblemCircle,
+                  isUnlocked
+                    ? { backgroundColor: badge.color }
+                    : styles.emblemCircleLocked,
+                ]}>
+                <AppIcon
+                  name={isUnlocked ? badge.iconName : 'lock-closed'}
+                  type={badge.iconType}
+                  size={24}
+                  color={isUnlocked ? Palette.forest : Palette.muted}
+                />
+                {isUnlocked && <View style={styles.unlockedDot} />}
               </View>
-              <Text style={styles.badgeDesc} numberOfLines={2}>
-                {badge.description}
+
+              {/* Title underneath */}
+              <Text
+                style={[styles.badgeTitle, !isUnlocked && styles.badgeTitleLocked]}
+                numberOfLines={1}>
+                {badge.title}
               </Text>
-            </View>
-          </Pressable>
-        ))}
-      </View>
+              <Text style={styles.badgeProgressText} numberOfLines={1}>
+                {isUnlocked
+                  ? 'Unlocked'
+                  : `${badge.currentProgress || 0}/${badge.targetGoal || 1} ${badge.unit || ''}`}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
     </View>
   );
 }
@@ -97,91 +103,105 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingRight: 8,
   },
+  titleWithBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   title: {
     ...Typography.sectionHeading,
     color: Palette.ink,
-    marginBottom: 2,
+  },
+  countPill: {
+    backgroundColor: Palette.forest,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: Radius.full,
+  },
+  countPillText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: Palette.lime,
   },
   subtitle: {
-    ...Typography.body,
-    fontSize: 13,
+    ...Typography.supporting,
     color: Palette.muted,
+    fontSize: 12,
+    marginTop: 2,
   },
   viewAllBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    paddingVertical: 4,
+    gap: 4,
+    paddingTop: 2,
   },
   viewAllText: {
     ...Typography.supporting,
-    fontSize: 12,
-    fontWeight: '700',
     color: Palette.forest,
+    fontWeight: '700',
+    fontSize: 12.5,
   },
-  grid: {
+  badgesRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
     gap: Spacing.space3,
+    paddingVertical: Spacing.space1,
   },
-  badgeCard: {
-    width: '48%',
-    flexGrow: 1,
-    backgroundColor: Palette.white,
-    borderRadius: Radius.card,
-    borderWidth: 1,
-    borderColor: Palette.border,
-    padding: Spacing.space3,
-    minHeight: 110,
-    justifyContent: 'space-between',
+  badgeItem: {
+    alignItems: 'center',
+    width: 78,
   },
-  badgeCardLocked: {
-    backgroundColor: Palette.surfaceHighlight,
-    borderStyle: 'dashed',
+  badgeItemPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.96 }],
   },
-  cardPressed: {
-    transform: [{ scale: 0.99 }],
-  },
-  iconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: Radius.sm,
+  emblemCircle: {
+    width: 58,
+    height: 58,
+    borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.space2,
+    marginBottom: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 3,
+    position: 'relative',
   },
-  iconWrapLocked: {
-    backgroundColor: Palette.surfaceSubtle,
+  emblemCircleLocked: {
+    backgroundColor: '#EBEFEB',
+    shadowOpacity: 0.02,
+    elevation: 1,
   },
-  textWrap: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 2,
+  unlockedDot: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Palette.forest,
+    borderWidth: 1.5,
+    borderColor: Palette.white,
   },
   badgeTitle: {
-    ...Typography.cardHeading,
-    fontSize: 13.5,
+    ...Typography.supporting,
+    fontSize: 11.5,
+    fontWeight: '700',
     color: Palette.ink,
-    flex: 1,
+    textAlign: 'center',
+    width: '100%',
   },
   badgeTitleLocked: {
     color: Palette.muted,
+    fontWeight: '500',
   },
-  unlockedDot: {
-    width: 6,
-    height: 6,
-    borderRadius: Radius.full,
-    backgroundColor: Palette.forest,
-  },
-  badgeDesc: {
+  badgeProgressText: {
     ...Typography.supporting,
-    fontSize: 11,
+    fontSize: 10,
     color: Palette.muted,
-    lineHeight: 15,
+    textAlign: 'center',
+    marginTop: 1,
   },
 });
