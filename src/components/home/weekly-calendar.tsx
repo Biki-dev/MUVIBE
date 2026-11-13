@@ -1,6 +1,8 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { ActivityRecord } from '@/types/activity';
+import { StreakInfo } from '@/types/activity';
 
 type DayState = 'completed' | 'missed' | 'today' | 'upcoming';
 
@@ -9,73 +11,88 @@ interface WeekDayItem {
   dateNumber: number;
   isToday: boolean;
   state: DayState;
-  fullDate: Date;
 }
 
 const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-export function WeeklyCalendar() {
-  const weekDays: WeekDayItem[] = useMemo(() => {
-    const now = new Date();
-    // Monday-based calculation (Sunday = 0 in JS Date)
-    const currentDay = now.getDay();
-    const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+interface WeeklyCalendarProps {
+  activities?: ActivityRecord[];
+  streak?: StreakInfo;
+}
 
-    const monday = new Date(now);
-    monday.setDate(now.getDate() + distanceToMonday);
-    monday.setHours(0, 0, 0, 0);
+export function WeeklyCalendar({ activities = [], streak }: WeeklyCalendarProps) {
+  // Build week days using real activity data
+  const now = new Date();
+  const currentDay = now.getDay();
+  const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
 
-    const todayDateNumber = now.getDate();
-    const todayMonth = now.getMonth();
-    const todayYear = now.getFullYear();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + distanceToMonday);
+  monday.setHours(0, 0, 0, 0);
 
-    // Mock history for past days to demonstrate states:
-    // e.g., Mon = completed, Tue = completed, Wed = missed, Thu = completed, Fri = completed
-    const mockPastStates: Record<number, 'completed' | 'missed'> = {
-      0: 'completed', // Mon
-      1: 'completed', // Tue
-      2: 'missed',    // Wed
-      3: 'completed', // Thu
-      4: 'completed', // Fri
-      5: 'completed', // Sat
-      6: 'missed',    // Sun
+  const todayDateNumber = now.getDate();
+  const todayMonth = now.getMonth();
+  const todayYear = now.getFullYear();
+
+  // Build a set of dates where activities occurred
+  const activeDateSet = new Set<string>();
+  for (const act of activities) {
+    const d = new Date(act.startedAt);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    activeDateSet.add(key);
+  }
+
+  const weekDays: WeekDayItem[] = WEEKDAY_LABELS.map((label, index) => {
+    const dayDate = new Date(monday);
+    dayDate.setDate(monday.getDate() + index);
+
+    const isToday =
+      dayDate.getDate() === todayDateNumber &&
+      dayDate.getMonth() === todayMonth &&
+      dayDate.getFullYear() === todayYear;
+
+    const isPast =
+      !isToday && dayDate < new Date(todayYear, todayMonth, todayDateNumber, 0, 0, 0, 0);
+
+    const dateKey = `${dayDate.getFullYear()}-${String(dayDate.getMonth() + 1).padStart(2, '0')}-${String(dayDate.getDate()).padStart(2, '0')}`;
+
+    let state: DayState = 'upcoming';
+    if (isToday) {
+      state = activeDateSet.has(dateKey) ? 'completed' : 'today';
+    } else if (isPast) {
+      state = activeDateSet.has(dateKey) ? 'completed' : 'missed';
+    } else {
+      state = 'upcoming';
+    }
+
+    return {
+      dayLabel: label,
+      dateNumber: dayDate.getDate(),
+      isToday,
+      state,
     };
+  });
 
-    return WEEKDAY_LABELS.map((label, index) => {
-      const dayDate = new Date(monday);
-      dayDate.setDate(monday.getDate() + index);
-
-      const isToday =
-        dayDate.getDate() === todayDateNumber &&
-        dayDate.getMonth() === todayMonth &&
-        dayDate.getFullYear() === todayYear;
-
-      const isPast =
-        !isToday &&
-        dayDate <
-          new Date(todayYear, todayMonth, todayDateNumber, 0, 0, 0, 0);
-
-      let state: DayState = 'upcoming';
-      if (isToday) {
-        state = 'today';
-      } else if (isPast) {
-        state = mockPastStates[index] || 'completed';
-      } else {
-        state = 'upcoming';
-      }
-
-      return {
-        dayLabel: label,
-        dateNumber: dayDate.getDate(),
-        isToday,
-        state,
-        fullDate: dayDate,
-      };
-    });
-  }, []);
+  const completedThisWeek = weekDays.filter((d) => d.state === 'completed').length;
+  const totalPastDays = weekDays.filter((d) => d.state !== 'upcoming').length;
 
   return (
     <View style={styles.container}>
+      {/* Week label + stat */}
+      <View style={styles.headerRow}>
+        <View>
+          <Text style={styles.weekTitle}>This Week</Text>
+          <Text style={styles.weekSubtitle}>
+            {completedThisWeek}/{totalPastDays > 0 ? totalPastDays : 7} days active
+          </Text>
+        </View>
+        {(streak?.currentStreak ?? 0) > 0 && (
+          <View style={styles.streakPill}>
+            <Text style={styles.streakText}>🔥 {streak?.currentStreak}d streak</Text>
+          </View>
+        )}
+      </View>
+
       <View style={styles.daysRow}>
         {weekDays.map((item, index) => {
           const isCompleted = item.state === 'completed';
@@ -84,7 +101,6 @@ export function WeeklyCalendar() {
 
           return (
             <View key={index} style={styles.dayColumn}>
-              {/* Weekday label */}
               <Text
                 style={[
                   styles.dayLabel,
@@ -93,7 +109,6 @@ export function WeeklyCalendar() {
                 {item.dayLabel}
               </Text>
 
-              {/* Circular date element */}
               <View
                 style={[
                   styles.dateCircle,
@@ -112,7 +127,6 @@ export function WeeklyCalendar() {
                 </Text>
               </View>
 
-              {/* Subtle status indicator dot */}
               <View style={styles.dotContainer}>
                 {isCompleted && <View style={styles.completedDot} />}
                 {isMissed && <View style={styles.missedDot} />}
@@ -134,7 +148,35 @@ const styles = StyleSheet.create({
     borderColor: Palette.border,
     paddingVertical: Spacing.space3,
     paddingHorizontal: Spacing.space3,
-    marginBottom: Spacing.space5,
+    marginBottom: Spacing.space4,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.space3,
+  },
+  weekTitle: {
+    ...Typography.cardHeading,
+    fontSize: 14,
+    fontWeight: '700',
+    color: Palette.ink,
+  },
+  weekSubtitle: {
+    ...Typography.supporting,
+    fontSize: 11.5,
+    color: Palette.muted,
+  },
+  streakPill: {
+    backgroundColor: Palette.forest,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: Radius.full,
+  },
+  streakText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: Palette.lime,
   },
   daysRow: {
     flexDirection: 'row',
@@ -154,11 +196,11 @@ const styles = StyleSheet.create({
   },
   dayLabelToday: {
     color: Palette.forest,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   dateCircle: {
-    width: 38,
-    height: 38,
+    width: 36,
+    height: 36,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
@@ -177,12 +219,12 @@ const styles = StyleSheet.create({
   },
   dateText: {
     ...Typography.bodyBold,
-    fontSize: 14,
+    fontSize: 13,
     color: Palette.muted,
   },
   dateTextCompleted: {
     color: Palette.ink,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   dateTextMissed: {
     color: Palette.muted,

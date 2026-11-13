@@ -1,59 +1,104 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 
 interface QuickActionsProps {
   onLogActivity?: () => void;
-  onStartChallenge?: () => void;
-  onJoinCommunity?: () => void;
 }
 
-export function QuickActions({
-  onLogActivity,
-  onStartChallenge,
-  onJoinCommunity,
-}: QuickActionsProps) {
-  const actions = [
-    {
-      id: 'log',
-      label: 'Log Activity',
-      iconName: 'add-outline',
-      onPress: () => onLogActivity?.(),
-    },
-    {
-      id: 'challenge',
-      label: 'Start Challenge',
-      iconName: 'trophy-outline',
-      onPress: () => onStartChallenge?.(),
-    },
-    {
-      id: 'community',
-      label: 'Join Community',
-      iconName: 'people-outline',
-      onPress: () => onJoinCommunity?.(),
-    },
-  ];
+const ACTIONS = [
+  {
+    id: 'walk',
+    label: 'Walk',
+    iconName: 'walk',
+    iconType: 'mci' as const,
+    route: '/activity/walking',
+    bg: '#EEF7E0',
+    color: Palette.forest,
+  },
+  {
+    id: 'run',
+    label: 'Run',
+    iconName: 'run',
+    iconType: 'mci' as const,
+    route: '/activity/running',
+    bg: Palette.forest,
+    color: Palette.lime,
+  },
+  {
+    id: 'cycle',
+    label: 'Cycle',
+    iconName: 'bicycle-outline',
+    iconType: 'ion' as const,
+    route: '/activity/cycling',
+    bg: '#E8F0FF',
+    color: Palette.electricBlue,
+  },
+  {
+    id: 'gym',
+    label: 'Gym',
+    iconName: 'barbell-outline',
+    iconType: 'ion' as const,
+    route: '/activity/gym',
+    bg: '#FFF3E0',
+    color: Palette.amber,
+  },
+  {
+    id: 'yoga',
+    label: 'Yoga',
+    iconName: 'body-outline',
+    iconType: 'ion' as const,
+    route: '/activity/yoga',
+    bg: '#FDE8F0',
+    color: '#D4578F',
+  },
+  {
+    id: 'jump',
+    label: 'Jumprope',
+    iconName: 'timer-outline',
+    iconType: 'ion' as const,
+    route: '/activity/jump_rope',
+    bg: '#E0FAF7',
+    color: '#1AAC96',
+  },
+];
+
+export function QuickActions({ onLogActivity }: QuickActionsProps) {
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Quick Actions</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.sectionTitle}>Start Activity</Text>
+        <Pressable
+          onPress={() => router.push('/(tabs)/activity' as any)}
+          style={styles.seeMoreBtn}
+          hitSlop={8}>
+          <Text style={styles.seeMoreText}>All</Text>
+          <AppIcon name="arrow-forward" size={12} color={Palette.forest} />
+        </Pressable>
+      </View>
 
-      <View style={styles.cardsRow}>
-        {actions.map((action) => (
+      <View style={styles.grid}>
+        {ACTIONS.map((action) => (
           <Pressable
             key={action.id}
-            onPress={action.onPress}
-            style={({ pressed }) => [
-              styles.actionCard,
-              pressed && styles.pressed,
-            ]}
-            accessibilityRole="button"
-            accessibilityLabel={action.label}>
-            <View style={styles.iconCircle}>
-              <AppIcon name={action.iconName} size={22} color={Palette.forest} />
+            onPress={() => {
+              onLogActivity?.();
+              router.push(action.route as any);
+            }}
+            style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
+            <View style={[styles.iconCircle, { backgroundColor: action.bg }]}>
+              <AppIcon
+                name={action.iconName}
+                type={action.iconType}
+                size={22}
+                color={action.color}
+              />
             </View>
-            <Text style={styles.actionLabel} numberOfLines={2}>
+            <Text style={styles.cardLabel} numberOfLines={1}>
               {action.label}
             </Text>
           </Pressable>
@@ -67,46 +112,64 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: Spacing.space5,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.space3,
+  },
   sectionTitle: {
     ...Typography.sectionHeading,
     color: Palette.ink,
-    marginBottom: Spacing.space3,
+    fontSize: 16,
+    fontWeight: '700',
   },
-  cardsRow: {
+  seeMoreBtn: {
     flexDirection: 'row',
-    gap: Spacing.space3,
+    alignItems: 'center',
+    gap: 4,
   },
-  actionCard: {
-    flex: 1,
+  seeMoreText: {
+    ...Typography.supporting,
+    color: Palette.forest,
+    fontWeight: '700',
+    fontSize: 12.5,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.space2 + 2,
+  },
+  card: {
+    width: '30.5%',
+    flexGrow: 1,
     backgroundColor: Palette.white,
     borderRadius: Radius.card,
     borderWidth: 1,
     borderColor: Palette.border,
-    paddingVertical: Spacing.space3 + 2,
+    paddingVertical: Spacing.space3,
     paddingHorizontal: Spacing.space2,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 96,
+    minHeight: 80,
+  },
+  cardPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.97 }],
   },
   iconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: Radius.sm,
-    backgroundColor: Palette.surfaceSubtle,
+    width: 42,
+    height: 42,
+    borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Spacing.space2,
   },
-  actionLabel: {
+  cardLabel: {
     ...Typography.supporting,
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 11.5,
+    fontWeight: '700',
     color: Palette.ink,
     textAlign: 'center',
-    lineHeight: 16,
-  },
-  pressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.98 }],
   },
 });
