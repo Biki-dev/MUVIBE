@@ -33,8 +33,8 @@ const ACTIONS = [
     iconName: 'bicycle-outline',
     iconType: 'ion' as const,
     route: '/activity/cycling',
-    bg: '#E8F0FF',
-    color: Palette.electricBlue,
+    bg: '#EEF7E0',
+    color: Palette.forest,
   },
   {
     id: 'gym',
@@ -42,8 +42,8 @@ const ACTIONS = [
     iconName: 'barbell-outline',
     iconType: 'ion' as const,
     route: '/activity/gym',
-    bg: '#FFF3E0',
-    color: Palette.amber,
+    bg: Palette.forest,
+    color: Palette.lime,
   },
   {
     id: 'yoga',
@@ -51,8 +51,8 @@ const ACTIONS = [
     iconName: 'body-outline',
     iconType: 'ion' as const,
     route: '/activity/yoga',
-    bg: '#FDE8F0',
-    color: '#D4578F',
+    bg: '#EEF7E0',
+    color: Palette.forest,
   },
   {
     id: 'jump',
@@ -60,8 +60,8 @@ const ACTIONS = [
     iconName: 'timer-outline',
     iconType: 'ion' as const,
     route: '/activity/jump_rope',
-    bg: '#E0FAF7',
-    color: '#1AAC96',
+    bg: Palette.forest,
+    color: Palette.lime,
   },
 ];
 
