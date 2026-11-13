@@ -1,9 +1,7 @@
-import { Palette, Spacing, Typography, FontFamily } from '@/constants/theme';
+import { FontFamily, Palette, Radius, Spacing, Typography } from '@/constants/theme';
 import { useAuth } from '@/context/auth-context';
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
-import { useAuth } from '@/context/auth-context';
 
 interface HomeHeaderProps {
   currentStreak?: number;
