@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { SquadRankItem } from '@/types/community';
 import { AppIcon } from '@/components/ui/icon';
 
@@ -107,6 +107,7 @@ const styles = StyleSheet.create({
   yourSquadText: {
     fontSize: 9,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   subtext: {

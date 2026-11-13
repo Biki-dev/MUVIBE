@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { ChallengeCategory } from '@/types/challenge';
 
 interface CategorySelectorProps {
@@ -74,10 +74,12 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12.5,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
   tabTextActive: {
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
 });

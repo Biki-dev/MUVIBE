@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { StreakInfo } from '@/types/activity';
 
@@ -163,6 +163,7 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     color: Palette.muted,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
   },
   metricValueWrap: {
     flexDirection: 'row',
@@ -192,6 +193,7 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     color: Palette.muted,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     marginBottom: Spacing.space2,
   },
   daysRow: {
@@ -208,11 +210,13 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Palette.muted,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
     marginBottom: 4,
   },
   dayLabelToday: {
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   circle: {
     width: 32,
@@ -240,10 +244,12 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     color: Palette.muted,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   dateNumToday: {
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   dateNumMissed: {
     color: Palette.borderDark || '#8A978E',

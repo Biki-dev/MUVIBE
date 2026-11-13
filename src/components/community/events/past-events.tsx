@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { CommunityEvent } from '@/types/community';
 
@@ -96,6 +96,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Palette.muted,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   footerRow: {
     flexDirection: 'row',
@@ -119,6 +120,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
 });

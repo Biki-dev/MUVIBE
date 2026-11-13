@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { ActivityType } from '@/types/activity';
 
@@ -122,13 +122,17 @@ export function StartActivitySection() {
                 />
               </View>
               <View style={styles.tagBadge}>
-                <Text style={styles.tagText}>{act.tag}</Text>
+                <Text style={styles.tagText} numberOfLines={1}>
+                  {act.tag}
+                </Text>
               </View>
             </View>
 
             <View style={styles.contentWrap}>
-              <Text style={styles.activityName}>{act.label}</Text>
-              <Text style={styles.activityDesc} numberOfLines={1}>
+              <Text style={styles.activityName} numberOfLines={1}>
+                {act.label}
+              </Text>
+              <Text style={styles.activityDesc} numberOfLines={2}>
                 {act.subtitle}
               </Text>
             </View>
@@ -160,14 +164,19 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.space4,
   },
   grid: {
-    gap: Spacing.space3,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: Spacing.space3,
   },
   tile: {
+    width: '48.5%',
+    justifyContent: 'space-between',
     backgroundColor: Palette.white,
     borderRadius: Radius.card,
     borderWidth: 1,
     borderColor: Palette.border,
-    padding: Spacing.space4,
+    padding: Spacing.space3,
     shadowColor: '#000',
     shadowOpacity: 0.02,
     shadowOffset: { width: 0, height: 1 },
@@ -186,14 +195,16 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.space2 + 2,
   },
   iconWrap: {
-    width: 36,
-    height: 36,
+    width: 32,
+    height: 32,
     borderRadius: Radius.sm,
     backgroundColor: Palette.surfaceSubtle,
     alignItems: 'center',
     justifyContent: 'center',
   },
   tagBadge: {
+    flexShrink: 1,
+    marginLeft: 6,
     backgroundColor: Palette.surfaceSubtle,
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -205,10 +216,13 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 10.5,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
   contentWrap: {
-    marginBottom: Spacing.space3,
+    flex: 1,
+    minHeight: 52,
+    marginBottom: Spacing.space2,
   },
   activityName: {
     ...Typography.cardHeading,
@@ -234,6 +248,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     fontSize: 12,
   },
 });

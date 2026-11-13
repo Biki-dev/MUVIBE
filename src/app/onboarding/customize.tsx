@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { ProgressHeader } from '@/components/onboarding/progress-header';
 import { Button } from '@/components/ui/button';
 import { AppIcon } from '@/components/ui/icon';
@@ -294,6 +294,7 @@ const styles = StyleSheet.create({
   },
   avatarEmoji: {
     fontSize: 48,
+    fontFamily: FontFamily.regular,
   },
   cameraBadge: {
     position: 'absolute',
@@ -316,6 +317,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     fontSize: 13,
   },
   summaryCard: {
@@ -365,6 +367,7 @@ const styles = StyleSheet.create({
   bioLabel: {
     ...Typography.supporting,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.ink,
   },
   optionalBadge: {
@@ -451,11 +454,13 @@ const styles = StyleSheet.create({
   },
   presetEmoji: {
     fontSize: 28,
+    fontFamily: FontFamily.regular,
   },
   presetLabel: {
     ...Typography.supporting,
     color: Palette.ink,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     fontSize: 12,
   },
   photoActionsList: {

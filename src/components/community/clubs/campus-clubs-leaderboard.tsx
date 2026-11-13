@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { CommunityClub } from '@/types/community';
 
@@ -150,6 +150,7 @@ const styles = StyleSheet.create({
     ...Typography.bodyBold,
     fontSize: 12,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   clubInfoWrap: {
     flex: 1,
@@ -176,6 +177,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 10,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
   statsMetaRow: {
@@ -188,10 +190,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Palette.forest,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   dotSeparator: {
     color: Palette.border,
     fontSize: 10,
+    fontFamily: FontFamily.regular,
   },
   metaStat: {
     ...Typography.supporting,
@@ -209,6 +213,7 @@ const styles = StyleSheet.create({
   scoreValueTop: {
     color: Palette.forest,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   scoreLabel: {
     ...Typography.supporting,

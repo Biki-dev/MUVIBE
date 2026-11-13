@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Palette, Spacing, Typography } from '@/constants/theme';
+import { Palette, Spacing, Typography, FontFamily } from '@/constants/theme';
 
 export function CommunityHeader() {
   return (
@@ -21,6 +21,7 @@ const styles = StyleSheet.create({
     color: Palette.forest,
     letterSpacing: -0.5,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   subtitle: {
     ...Typography.body,

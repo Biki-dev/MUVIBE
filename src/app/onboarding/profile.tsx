@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { ProgressHeader } from '@/components/onboarding/progress-header';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -356,6 +356,7 @@ const styles = StyleSheet.create({
   fieldLabel: {
     ...Typography.supporting,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.ink,
   },
   requiredStar: {
@@ -363,6 +364,7 @@ const styles = StyleSheet.create({
     marginLeft: 3,
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   selectBox: {
     flexDirection: 'row',
@@ -421,6 +423,7 @@ const styles = StyleSheet.create({
   yearChipText: {
     ...Typography.supporting,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.ink,
   },
   yearChipTextSelected: {
@@ -477,6 +480,7 @@ const styles = StyleSheet.create({
   },
   modalItemTextSelected: {
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
 });

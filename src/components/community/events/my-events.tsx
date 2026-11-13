@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { CommunityEvent } from '@/types/community';
 import { EmptyState } from '@/components/challenge/empty-state';
@@ -121,6 +121,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
   infoRow: {
@@ -139,6 +140,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Palette.ink,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   venueRow: {
     flexDirection: 'row',
@@ -163,6 +165,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
 });

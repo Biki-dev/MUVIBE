@@ -9,7 +9,7 @@ import {
   View,
   StyleProp,
 } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'coral';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -147,14 +147,17 @@ const styles = StyleSheet.create({
   textSize_sm: {
     fontSize: 13,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   textSize_md: {
     fontSize: 15,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   textSize_lg: {
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
 
   text_primary: {

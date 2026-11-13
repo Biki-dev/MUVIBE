@@ -1,15 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { ProgressHeader } from '@/components/onboarding/progress-header';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,31 +22,10 @@ export default function NotificationsAndFinishScreen() {
 
   const [isCompletedState, setIsCompletedState] = useState(false);
 
-  // Animation values for completion screen
-  const scaleAnim = useSharedValue(0.7);
-  const opacityAnim = useSharedValue(0);
-
   const triggerCompletion = async (enabled: boolean) => {
     await setNotifications(enabled);
     setIsCompletedState(true);
   };
-
-  useEffect(() => {
-    if (isCompletedState) {
-      scaleAnim.value = withSequence(
-        withSpring(1.05, { damping: 10, stiffness: 120 }),
-        withSpring(1.0, { damping: 12, stiffness: 100 })
-      );
-      opacityAnim.value = withTiming(1, { duration: 400 });
-    }
-  }, [isCompletedState]);
-
-  const animatedCelebrationStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scaleAnim.value }],
-      opacity: opacityAnim.value,
-    };
-  });
 
   const handleEnterApp = async () => {
     await completeOnboarding();
@@ -159,8 +131,8 @@ export default function NotificationsAndFinishScreen() {
             </View>
           </>
         ) : (
-          /* Onboarding Complete Animation & Student Pass */
-          <Animated.View style={[styles.completionWrapper, animatedCelebrationStyle]}>
+          /* Onboarding complete: Student Pass */
+          <View style={styles.completionWrapper}>
             {/* Celebratory badge */}
             <View style={styles.celebrationBadgeContainer}>
               <View style={styles.celebrationCircle}>
@@ -238,7 +210,7 @@ export default function NotificationsAndFinishScreen() {
                 iconPosition="right"
               />
             </View>
-          </Animated.View>
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -439,6 +411,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.forest,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     fontSize: 12.5,
   },
   passDept: {
@@ -454,6 +427,7 @@ const styles = StyleSheet.create({
     color: Palette.muted,
     fontSize: 11,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 6,
@@ -474,6 +448,7 @@ const styles = StyleSheet.create({
     color: Palette.ink,
     fontSize: 11.5,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   passClubsSection: {
     marginTop: Spacing.space1,

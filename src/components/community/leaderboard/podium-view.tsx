@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { IndividualRankItem } from '@/types/community';
 import { AppIcon } from '@/components/ui/icon';
 
@@ -120,9 +120,11 @@ const styles = StyleSheet.create({
   },
   avatarEmoji: {
     fontSize: 22,
+    fontFamily: FontFamily.regular,
   },
   avatarEmojiFirst: {
     fontSize: 26,
+    fontFamily: FontFamily.regular,
   },
   rankBadge: {
     position: 'absolute',
@@ -148,11 +150,13 @@ const styles = StyleSheet.create({
   rankNum: {
     fontSize: 10,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
   rankNum1: {
     fontSize: 11,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.lime,
   },
   name: {
@@ -164,6 +168,7 @@ const styles = StyleSheet.create({
   firstName: {
     fontSize: 13.5,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   dept: {
     ...Typography.supporting,
@@ -178,5 +183,6 @@ const styles = StyleSheet.create({
   },
   firstPoints: {
     fontSize: 13,
+    fontFamily: FontFamily.regular,
   },
 });

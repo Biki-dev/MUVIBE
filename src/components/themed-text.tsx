@@ -1,6 +1,6 @@
 import { Platform, StyleSheet, Text, type TextProps } from 'react-native';
 
-import { Fonts, ThemeColor } from '@/constants/theme';
+import { Fonts, ThemeColor, FontFamily } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export type ThemedTextProps = TextProps & {
@@ -59,10 +59,12 @@ const styles = StyleSheet.create({
   link: {
     lineHeight: 30,
     fontSize: 14,
+    fontFamily: FontFamily.regular,
   },
   linkPrimary: {
     lineHeight: 30,
     fontSize: 14,
+    fontFamily: FontFamily.regular,
     color: '#3c87f7',
   },
   code: {

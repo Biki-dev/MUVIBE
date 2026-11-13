@@ -9,9 +9,11 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { StudentProfile } from '@/types/auth';
 import { UserConnectionItem, PublicUserProfile } from '@/types/profile';
@@ -209,11 +211,11 @@ export function UserProfileCard({
       {/* ── MODAL 1: Followers / Following List ── */}
       <Modal
         visible={socialModalType !== null}
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         onRequestClose={() => setSocialModalType(null)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+        <Pressable style={styles.modalOverlay} onPress={() => setSocialModalType(null)}>
+          <Pressable style={styles.modalCard} onPress={(e) => e.stopPropagation()}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
                 {socialModalType === 'followers'
@@ -274,32 +276,39 @@ export function UserProfileCard({
                 </Pressable>
               ))}
             </ScrollView>
-          </View>
-        </View>
+            <View style={styles.modalIndicator} />
+          </Pressable>
+        </Pressable>
       </Modal>
 
       {/* ── MODAL 2: Find & Connect Athletes ── */}
       <Modal
         visible={isSearchModalVisible}
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         onRequestClose={() => setIsSearchModalVisible(false)}>
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <View style={styles.modalHeader}>
               <View>
                 <Text style={styles.modalTitle}>Find Campus Athletes</Text>
-                <Text style={styles.modalSubtitle}>Search by name, @username or account ID</Text>
+                <Text style={styles.modalSubtitle}>Search by name or @username</Text>
               </View>
               <Pressable
-                onPress={() => setIsSearchModalVisible(false)}
+                onPress={() => {
+                  setSearchQuery('');
+                  setSearchResults([]);
+                  setIsSearchModalVisible(false);
+                }}
                 style={styles.modalCloseBtn}
                 hitSlop={10}>
                 <AppIcon name="close" size={20} color={Palette.ink} />
               </Pressable>
             </View>
 
-            {/* Search Input */}
+            {/* Search Input Box */}
             <View style={styles.searchInputRow}>
               <AppIcon name="search" size={18} color={Palette.muted} />
               <TextInput
@@ -310,10 +319,11 @@ export function UserProfileCard({
                 onChangeText={handlePerformSearch}
                 autoCapitalize="none"
                 autoCorrect={false}
+                autoFocus={true}
               />
               {searchQuery.length > 0 && (
-                <Pressable onPress={() => handlePerformSearch('')} hitSlop={6}>
-                  <AppIcon name="close-circle" size={16} color={Palette.muted} />
+                <Pressable onPress={() => handlePerformSearch('')} hitSlop={8}>
+                  <AppIcon name="close-circle" size={18} color={Palette.muted} />
                 </Pressable>
               )}
             </View>
@@ -325,7 +335,10 @@ export function UserProfileCard({
               </View>
             )}
 
-            <ScrollView style={styles.modalList} showsVerticalScrollIndicator={false}>
+            <ScrollView
+              style={styles.modalList}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled">
               {!isSearching && searchQuery.trim().length > 0 && searchResults.length === 0 && (
                 <View style={styles.emptyWrap}>
                   <AppIcon name="search-outline" size={32} color={Palette.muted} />
@@ -379,18 +392,19 @@ export function UserProfileCard({
                 );
               })}
             </ScrollView>
+            <View style={styles.modalIndicator} />
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* ── MODAL 3: Pending Incoming Requests ── */}
       <Modal
         visible={isRequestsModalVisible}
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         onRequestClose={() => setIsRequestsModalVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+        <Pressable style={styles.modalOverlay} onPress={() => setIsRequestsModalVisible(false)}>
+          <Pressable style={styles.modalCard} onPress={(e) => e.stopPropagation()}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Friend Requests ({pendingRequests.length})</Text>
               <Pressable
@@ -442,8 +456,9 @@ export function UserProfileCard({
                 </View>
               ))}
             </ScrollView>
-          </View>
-        </View>
+            <View style={styles.modalIndicator} />
+          </Pressable>
+        </Pressable>
       </Modal>
     </View>
   );
@@ -469,7 +484,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EDF8D7',
     borderRadius: Radius.sm,
     paddingHorizontal: Spacing.space3,
-    paddingVertical: 7,
+    paddingVertical: 9,
     marginBottom: Spacing.space3,
     gap: 8,
   },
@@ -483,13 +498,15 @@ const styles = StyleSheet.create({
   },
   pendingBannerText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
   pendingBannerAction: {
     fontSize: 12,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
     textDecorationLine: 'underline',
   },
@@ -515,6 +532,7 @@ const styles = StyleSheet.create({
   },
   avatarEmoji: {
     fontSize: 28,
+    fontFamily: FontFamily.regular,
   },
   nameBlock: {
     flex: 1,
@@ -523,6 +541,7 @@ const styles = StyleSheet.create({
     ...Typography.cardHeading,
     fontSize: 18,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
     marginBottom: 1,
   },
@@ -541,9 +560,9 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.forest,
   },
-  // Instagram stats bar
   statsBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -561,6 +580,7 @@ const styles = StyleSheet.create({
     ...Typography.cardHeading,
     fontSize: 16,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   statLabel: {
@@ -586,6 +606,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Palette.ink,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
   },
   bioText: {
     ...Typography.body,
@@ -616,6 +637,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
   searchBtn: {
@@ -625,25 +647,39 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
   btnPressed: {
     opacity: 0.8,
   },
-  // Modals
+  // Top-aligned Modals Styling
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.45)',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
   },
   modalCard: {
     backgroundColor: Palette.white,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
     paddingHorizontal: Spacing.space4,
-    paddingTop: Spacing.space4,
-    paddingBottom: Spacing.space8,
-    maxHeight: '80%',
+    paddingTop: Platform.OS === 'ios' ? 54 : Spacing.space5,
+    paddingBottom: 12,
+    maxHeight: '85%',
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  modalIndicator: {
+    alignSelf: 'center',
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Palette.border,
+    marginTop: 12,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -658,14 +694,17 @@ const styles = StyleSheet.create({
   },
   modalSubtitle: {
     fontSize: 11.5,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
     marginTop: 2,
   },
   modalCloseBtn: {
-    padding: 4,
+    padding: 6,
+    backgroundColor: Palette.surfaceSubtle,
+    borderRadius: Radius.full,
   },
   modalList: {
-    maxHeight: 380,
+    maxHeight: 400,
   },
   searchInputRow: {
     flexDirection: 'row',
@@ -675,13 +714,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Palette.border,
     paddingHorizontal: Spacing.space3,
-    paddingVertical: 8,
+    paddingVertical: 10,
     gap: 8,
     marginBottom: Spacing.space3,
   },
   searchInput: {
     flex: 1,
     fontSize: 13.5,
+    fontFamily: FontFamily.regular,
     color: Palette.ink,
     padding: 0,
   },
@@ -689,16 +729,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingVertical: 10,
+    paddingVertical: 12,
     justifyContent: 'center',
   },
   searchingText: {
     fontSize: 12,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
   },
   emptyWrap: {
     alignItems: 'center',
-    paddingVertical: 36,
+    paddingVertical: 40,
   },
   emptyText: {
     ...Typography.cardHeading,
@@ -708,6 +749,7 @@ const styles = StyleSheet.create({
   },
   emptySubtext: {
     fontSize: 12,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
     marginTop: 4,
     textAlign: 'center',
@@ -715,7 +757,7 @@ const styles = StyleSheet.create({
   userRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: Palette.border,
     justifyContent: 'space-between',
@@ -724,14 +766,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: 10,
+    gap: 12,
   },
   userRowPressed: {
     backgroundColor: Palette.surfaceSubtle,
   },
   userRowAvatar: {
-    width: 38,
-    height: 38,
+    width: 42,
+    height: 42,
     borderRadius: Radius.full,
     backgroundColor: Palette.surfaceHighlight,
     alignItems: 'center',
@@ -741,26 +783,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   userRowName: {
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   userRowHandle: {
     fontSize: 11.5,
+    fontFamily: FontFamily.regular,
     color: Palette.muted,
   },
   userRowCollege: {
     fontSize: 11,
+    fontFamily: FontFamily.regular,
     color: Palette.forest,
-    marginTop: 1,
+    marginTop: 2,
   },
   viewArrowWrap: {
     paddingLeft: 6,
   },
   followActionBtn: {
     backgroundColor: Palette.forest,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: Radius.sm,
   },
   followActionBtnSent: {
@@ -769,8 +814,9 @@ const styles = StyleSheet.create({
     borderColor: Palette.border,
   },
   followActionBtnText: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
   followActionBtnTextSent: {
@@ -778,10 +824,10 @@ const styles = StyleSheet.create({
   },
   reqRow: {
     flexDirection: 'column',
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: Palette.border,
-    gap: 8,
+    gap: 10,
   },
   reqActionRow: {
     flexDirection: 'row',
@@ -790,26 +836,28 @@ const styles = StyleSheet.create({
   },
   acceptBtn: {
     backgroundColor: Palette.forest,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 7,
     borderRadius: Radius.sm,
   },
   acceptBtnText: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
   rejectBtn: {
     backgroundColor: Palette.surfaceSubtle,
     borderWidth: 1,
     borderColor: Palette.border,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: Radius.sm,
   },
   rejectBtnText: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
 });

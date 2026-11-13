@@ -35,19 +35,22 @@ export function getElapsedSeconds(session: TrackingSession): number {
   return Math.max(0, Math.floor(totalMs / 1000));
 }
 
-export function getElapsedString(session: TrackingSession): string {
-  const seconds = getElapsedSeconds(session);
-  const hrs = Math.floor(seconds / 3600);
-  const mins = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
+/** mm:ss, or h:mm:ss past an hour. Takes plain seconds. */
+export function formatDuration(seconds: number): string {
+  const safe = Math.max(0, Math.floor(seconds));
+  const hrs = Math.floor(safe / 3600);
+  const mins = Math.floor((safe % 3600) / 60);
+  const secs = safe % 60;
 
   const mm = String(mins).padStart(2, '0');
   const ss = String(secs).padStart(2, '0');
 
-  if (hrs > 0) {
-    return `${hrs}:${mm}:${ss}`;
-  }
+  if (hrs > 0) return `${hrs}:${mm}:${ss}`;
   return `${mm}:${ss}`;
+}
+
+export function getElapsedString(session: TrackingSession): string {
+  return formatDuration(getElapsedSeconds(session));
 }
 
 export function stepsToDistance(steps: number, type: 'walking' | 'running'): number {

@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { useCommunity } from '@/context/community-context';
@@ -310,6 +310,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 10,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   categoryBadge: {
@@ -322,6 +323,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 10.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
   bannerTitle: {
@@ -329,6 +331,7 @@ const styles = StyleSheet.create({
     fontSize: 23,
     color: Palette.white,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
     marginBottom: 4,
   },
   bannerOrganizer: {
@@ -433,6 +436,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
   timelineTitle: {
@@ -484,6 +488,7 @@ const styles = StyleSheet.create({
   },
   pEmoji: {
     fontSize: 15,
+    fontFamily: FontFamily.regular,
   },
   pInfo: {
     flex: 1,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 
 export type BadgeVariant = 'lime' | 'forest' | 'neutral' | 'blue' | 'amber' | 'coral';
 
@@ -43,6 +43,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   lime: {
     backgroundColor: Palette.lime,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { Challenge } from '@/types/challenge';
 
@@ -165,6 +165,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.muted,
   },
   diffBadge: {
@@ -176,6 +177,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   rewardTag: {
     flexDirection: 'row',
@@ -192,6 +194,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   title: {
@@ -211,6 +214,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Palette.forest,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   metaRow: {
     flexDirection: 'row',
@@ -247,6 +251,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.forest,
   },
   joinBtn: {
@@ -267,12 +272,14 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
   },
   joinBtnTextActive: {
     ...Typography.supporting,
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.white,
   },
 });

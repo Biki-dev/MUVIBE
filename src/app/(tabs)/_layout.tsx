@@ -1,8 +1,18 @@
 import { Tabs } from 'expo-router';
-import { Palette } from '@/constants/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Palette, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 
+const BAR_CONTENT_HEIGHT = 60;
+
 export default function TabsLayout() {
+  // The bar previously used a flat height of 60 with 8px of bottom
+  // padding, which sat underneath the Android navigation bar and made
+  // the tabs unreachable on a real phone. The inset has to be added to
+  // both the height and the padding, not just the padding, or the
+  // content is squashed instead of lifted.
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
@@ -13,13 +23,14 @@ export default function TabsLayout() {
           backgroundColor: Palette.white,
           borderTopColor: Palette.border,
           borderTopWidth: 1,
-          height: 60,
-          paddingBottom: 8,
+          height: BAR_CONTENT_HEIGHT + insets.bottom,
+          paddingBottom: insets.bottom + 8,
           paddingTop: 6,
         },
         tabBarLabelStyle: {
           fontSize: 11.5,
           fontWeight: '600',
+          fontFamily: FontFamily.medium,
         },
       }}>
       <Tabs.Screen

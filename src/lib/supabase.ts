@@ -32,11 +32,34 @@ const validUrl = SUPABASE_URL && SUPABASE_URL.startsWith('http')
   : 'https://placeholder.supabase.co';
 const validKey = SUPABASE_ANON_KEY || 'placeholder-key';
 
+/**
+ * Expo prerenders web routes in Node when app.json sets
+ * web.output to "static". There is no `window` there, and AsyncStorage's
+ * web build reaches for it as soon as supabase-js tries to recover a
+ * session, which crashed the dev server with
+ * "ReferenceError: window is not defined".
+ *
+ * Detect that pass and hand supabase-js a storage object that does
+ * nothing, so it starts with no session server side and picks the real
+ * one up once it hydrates in the browser.
+ */
+const IS_SERVER = typeof window === 'undefined';
+
+const noopStorage = {
+  getItem: async () => null,
+  setItem: async () => {},
+  removeItem: async () => {},
+};
+
+const sessionStorage = IS_SERVER ? noopStorage : AsyncStorage;
+
 export const supabase = createClient(validUrl, validKey, {
   auth: {
-    storage: AsyncStorage as any,
-    autoRefreshToken: true,
-    persistSession: true,
+    storage: sessionStorage as any,
+    // Nothing to persist or refresh without a browser or device, and
+    // attempting it is what broke the Node render pass.
+    autoRefreshToken: !IS_SERVER,
+    persistSession: !IS_SERVER,
     detectSessionInUrl: false,
   },
 });

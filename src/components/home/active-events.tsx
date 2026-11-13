@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 
 interface EventItem {
@@ -135,6 +135,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.forest,
   },
   remainingBadge: {
@@ -147,6 +148,7 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
   },
   eventName: {
@@ -154,6 +156,7 @@ const styles = StyleSheet.create({
     fontSize: 16.5,
     color: Palette.ink,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     marginBottom: Spacing.space2 + 2,
   },
   detailsRow: {

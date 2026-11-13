@@ -7,7 +7,7 @@ import {
   TextInputProps,
   Pressable,
 } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from './icon';
 
 interface InputProps extends TextInputProps {
@@ -94,6 +94,7 @@ const styles = StyleSheet.create({
   label: {
     ...Typography.supporting,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
     color: Palette.ink,
   },
   requiredMark: {
@@ -101,6 +102,7 @@ const styles = StyleSheet.create({
     marginLeft: 3,
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
   },
   inputContainer: {
     flexDirection: 'row',

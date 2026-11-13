@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { ClubMemberRankItem } from '@/types/community';
 
@@ -178,6 +178,7 @@ const styles = StyleSheet.create({
     ...Typography.bodyBold,
     fontSize: 11,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   avatar: {
     width: 38,
@@ -188,6 +189,7 @@ const styles = StyleSheet.create({
   },
   avatarEmoji: {
     fontSize: 18,
+    fontFamily: FontFamily.regular,
   },
   infoCol: {
     flex: 1,
@@ -215,6 +217,7 @@ const styles = StyleSheet.create({
     color: Palette.lime,
     fontSize: 9,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   youBadge: {
     backgroundColor: Palette.lime,
@@ -227,6 +230,7 @@ const styles = StyleSheet.create({
     color: Palette.ink,
     fontSize: 9,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   statsRow: {
     flexDirection: 'row',
@@ -248,6 +252,7 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     color: Palette.ink,
     fontWeight: '600',
+    fontFamily: FontFamily.medium,
   },
   pointsCol: {
     alignItems: 'flex-end',
@@ -261,6 +266,7 @@ const styles = StyleSheet.create({
   pointsValTop: {
     color: Palette.forest,
     fontWeight: '800',
+    fontFamily: FontFamily.bold,
   },
   pointsUnit: {
     ...Typography.supporting,

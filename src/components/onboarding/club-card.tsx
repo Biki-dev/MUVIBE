@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { Club } from '@/types/club';
 import { Badge } from '@/components/ui/badge';
 import { AppIcon } from '@/components/ui/icon';
@@ -235,12 +235,14 @@ const styles = StyleSheet.create({
   joinText: {
     ...Typography.supporting,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.forest,
     fontSize: 12.5,
   },
   joinedText: {
     ...Typography.supporting,
     fontWeight: '700',
+    fontFamily: FontFamily.bold,
     color: Palette.ink,
     fontSize: 12.5,
   },
@@ -275,6 +277,7 @@ const styles = StyleSheet.create({
     color: Palette.muted,
     fontSize: 12,
     fontWeight: '500',
+    fontFamily: FontFamily.medium,
   },
   scheduleRow: {
     flexDirection: 'row',
