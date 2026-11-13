@@ -1,6 +1,6 @@
-import { AppIcon } from '@/components/ui/icon';
-import { Palette } from '@/constants/theme';
 import { Tabs } from 'expo-router';
+import { Palette } from '@/constants/theme';
+import { AppIcon } from '@/components/ui/icon';
 
 export default function TabsLayout() {
   return (

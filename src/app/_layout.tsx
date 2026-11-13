@@ -1,17 +1,17 @@
+import React, { useEffect } from 'react';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
 import { AuthProvider } from '@/context/auth-context';
 import { ChallengeProvider } from '@/context/challenge-context';
 import { CommunityProvider } from '@/context/community-context';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   useEffect(() => {
     // Hide native splash screen once root layout mounts so FitConnect Screen 01 displays
-    SplashScreen.hideAsync().catch(() => { });
+    SplashScreen.hideAsync().catch(() => {});
   }, []);
 
   return (
