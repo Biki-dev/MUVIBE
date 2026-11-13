@@ -128,9 +128,13 @@ export function WeeklyCalendar({ activities = [], streak }: WeeklyCalendarProps)
               </View>
 
               <View style={styles.dotContainer}>
-                {isCompleted && <View style={styles.completedDot} />}
-                {isMissed && <View style={styles.missedDot} />}
-                {isToday && <View style={styles.todayDot} />}
+                {isCompleted ? (
+                  <View style={styles.completedDot} />
+                ) : isMissed ? (
+                  <View style={styles.missedDot} />
+                ) : isToday ? (
+                  <View style={styles.todayDot} />
+                ) : null}
               </View>
             </View>
           );
