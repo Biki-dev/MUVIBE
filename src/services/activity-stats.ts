@@ -216,6 +216,7 @@ export function computeStreak(allActivities: ActivityRecord[]): StreakInfo {
 }
 
 export function formatDuration(seconds: number): string {
+  if (!seconds || seconds <= 0) return '0m';
   if (seconds < 60) return `${seconds}s`;
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m`;

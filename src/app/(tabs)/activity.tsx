@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { ScrollView, StyleSheet, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { Palette, Spacing } from '@/constants/theme';
 import { ActivityRecord, ActivityStats, PeriodType, StreakInfo } from '@/types/activity';
-import { getAllActivities } from '@/services/activity-storage';
+import { getAllActivities, subscribeToActivities } from '@/services/activity-storage';
 import { computeStats, computeStreak, filterByPeriod } from '@/services/activity-stats';
 import { ActivityHeader } from '@/components/activity/activity-header';
 import { ActivityStatsSection } from '@/components/activity/activity-stats-section';
@@ -20,6 +20,17 @@ export default function ActivityScreen() {
     const list = await getAllActivities();
     setActivities(list);
   }, []);
+
+  // Real-time subscription to Supabase activities table
+  useEffect(() => {
+    loadData();
+    const unsubscribe = subscribeToActivities(() => {
+      loadData();
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [loadData]);
 
   useFocusEffect(
     useCallback(() => {

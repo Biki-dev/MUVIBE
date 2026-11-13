@@ -1,10 +1,33 @@
+/**
+ * src/context/auth-context.tsx
+ * ─────────────────────────────────────────────────────────────────
+ * Authentication & onboarding context backed by Supabase Auth.
+ *
+ * What it does
+ * ─────────────────────────────────────────────────────────────────
+ * • Listens to Supabase auth state changes (onAuthStateChange).
+ * • signUpWithEmail  → creates Supabase auth user + inserts a row
+ *                      into public.users with the user's id/email.
+ * • signInWithEmail  → Supabase email/password sign-in.
+ * • logout           → Supabase sign-out + clears local state.
+ * • updateProfile    → upserts the public.users row + persists
+ *                      onboarding data in AsyncStorage for fast
+ *                      offline reads.
+ * • Google sign-in is intentionally left as a stub — will be
+ *   wired up in a future session.
+ * ─────────────────────────────────────────────────────────────────
+ */
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { Session } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
+import { clearAllActivities } from '@/services/activity-storage';
 import { User, StudentProfile, OnboardingData } from '@/types/auth';
 
-const STORAGE_KEY_USER = '@fitconnect_user_v1';
-const STORAGE_KEY_ONBOARDING = '@fitconnect_onboarding_v1';
+// ── Storage keys ──────────────────────────────────────────────────
+const STORAGE_KEY_ONBOARDING = '@muvibe_onboarding_v1';
 
+// ── Types ─────────────────────────────────────────────────────────
 interface AuthContextType {
   user: User | null;
   profile: StudentProfile;
@@ -16,7 +39,6 @@ interface AuthContextType {
   isCheckingSession: boolean;
   hasValidSession: boolean;
 
-  // Actions
   signInWithEmail: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   signUpWithEmail: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   signInWithGoogle: () => Promise<{ success: boolean; error?: string }>;
@@ -32,6 +54,7 @@ interface AuthContextType {
   getNextOnboardingRoute: () => string;
 }
 
+// ── Defaults ──────────────────────────────────────────────────────
 const defaultProfile: StudentProfile = {
   fullName: '',
   username: '',
@@ -44,6 +67,17 @@ const defaultProfile: StudentProfile = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// ── Helper: map Supabase session → our User type ──────────────────
+function sessionToUser(session: Session): User {
+  return {
+    id: session.user.id,
+    email: session.user.email ?? '',
+    name: session.user.user_metadata?.full_name ?? session.user.email?.split('@')[0] ?? '',
+    provider: (session.user.app_metadata?.provider as 'email' | 'google') ?? 'email',
+  };
+}
+
+// ── Provider ──────────────────────────────────────────────────────
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfileState] = useState<StudentProfile>(defaultProfile);
@@ -54,59 +88,85 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState<boolean>(false);
   const [isCheckingSession, setIsCheckingSession] = useState<boolean>(true);
 
-  // Initialize and check existing session
-  useEffect(() => {
-    async function loadSession() {
-      try {
-        const [storedUserJson, storedOnboardingJson] = await Promise.all([
-          AsyncStorage.getItem(STORAGE_KEY_USER),
-          AsyncStorage.getItem(STORAGE_KEY_ONBOARDING),
-        ]);
+  // ── Load cached onboarding data from AsyncStorage ───────────────
+  const loadOnboardingCache = async () => {
+    try {
+      const json = await AsyncStorage.getItem(STORAGE_KEY_ONBOARDING);
+      if (!json) return;
+      const data: OnboardingData = JSON.parse(json);
+      if (data.profile) setProfileState((p) => ({ ...p, ...data.profile }));
+      if (Array.isArray(data.selectedActivities)) setSelectedActivities(data.selectedActivities);
+      if (typeof data.locationEnabled === 'boolean') setLocationEnabledState(data.locationEnabled);
+      if (Array.isArray(data.joinedClubIds)) setJoinedClubIds(data.joinedClubIds);
+      if (typeof data.notificationsEnabled === 'boolean')
+        setNotificationsEnabledState(data.notificationsEnabled);
+      if (typeof data.isCompleted === 'boolean') setIsOnboardingCompleted(data.isCompleted);
+    } catch {
+      // safe to ignore — data will re-sync from Supabase on next write
+    }
+  };
 
-        if (storedUserJson) {
-          const parsedUser: User = JSON.parse(storedUserJson);
-          setUser(parsedUser);
-        }
+  // ── Load profile from Supabase public.users ─────────────────────
+  const loadProfileFromDB = async (userId: string) => {
+    const { data } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
 
-        if (storedOnboardingJson) {
-          const parsedOnboarding: OnboardingData = JSON.parse(storedOnboardingJson);
-          if (parsedOnboarding.profile) {
-            setProfileState((prev) => ({ ...prev, ...parsedOnboarding.profile }));
-          }
-          if (Array.isArray(parsedOnboarding.selectedActivities)) {
-            setSelectedActivities(parsedOnboarding.selectedActivities);
-          }
-          if (typeof parsedOnboarding.locationEnabled === 'boolean') {
-            setLocationEnabledState(parsedOnboarding.locationEnabled);
-          }
-          if (Array.isArray(parsedOnboarding.joinedClubIds)) {
-            setJoinedClubIds(parsedOnboarding.joinedClubIds);
-          }
-          if (typeof parsedOnboarding.notificationsEnabled === 'boolean') {
-            setNotificationsEnabledState(parsedOnboarding.notificationsEnabled);
-          }
-          if (typeof parsedOnboarding.isCompleted === 'boolean') {
-            setIsOnboardingCompleted(parsedOnboarding.isCompleted);
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to restore session from storage:', err);
-      } finally {
-        // Minimum natural pause to feel responsive without jarring flash
-        setTimeout(() => {
-          setIsCheckingSession(false);
-        }, 450);
+    if (data) {
+      const dbProfile: Partial<StudentProfile> = {
+        fullName: data.full_name ?? '',
+        username: data.username ?? '',
+        college: data.college ?? defaultProfile.college,
+        department: data.department ?? defaultProfile.department,
+        academicYear: data.academic_year ?? defaultProfile.academicYear,
+        avatarUrl: data.avatar_url ?? '',
+        bio: data.bio ?? '',
+      };
+      setProfileState((p) => ({ ...p, ...dbProfile }));
+      if (typeof data.onboarding_done === 'boolean') {
+        setIsOnboardingCompleted(data.onboarding_done);
       }
     }
+  };
 
-    loadSession();
+  // ── Bootstrap: listen to Supabase auth changes ──────────────────
+  useEffect(() => {
+    // Initial session fetch
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session) {
+        const u = sessionToUser(session);
+        setUser(u);
+        await Promise.all([loadOnboardingCache(), loadProfileFromDB(u.id)]);
+      } else {
+        await loadOnboardingCache();
+      }
+      setTimeout(() => setIsCheckingSession(false), 350);
+    });
+
+    // Subscribe to future changes (login, logout, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (session) {
+          const u = sessionToUser(session);
+          setUser(u);
+          await loadProfileFromDB(u.id);
+        } else {
+          setUser(null);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const persistOnboarding = async (newData: Partial<OnboardingData>) => {
+  // ── Persist onboarding data locally ─────────────────────────────
+  const persistOnboarding = async (patch: Partial<OnboardingData>) => {
     try {
-      const currentRaw = await AsyncStorage.getItem(STORAGE_KEY_ONBOARDING);
-      const current: OnboardingData = currentRaw
-        ? JSON.parse(currentRaw)
+      const existing = await AsyncStorage.getItem(STORAGE_KEY_ONBOARDING);
+      const current: OnboardingData = existing
+        ? JSON.parse(existing)
         : {
             profile,
             selectedActivities,
@@ -115,78 +175,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             notificationsEnabled,
             isCompleted: isOnboardingCompleted,
           };
-
-      const merged: OnboardingData = {
-        ...current,
-        ...newData,
-        profile: newData.profile ? { ...current.profile, ...newData.profile } : current.profile,
-      };
-
+      const merged = { ...current, ...patch };
       await AsyncStorage.setItem(STORAGE_KEY_ONBOARDING, JSON.stringify(merged));
-    } catch (err) {
-      console.warn('Error saving onboarding data:', err);
+    } catch {
+      // non-fatal
     }
   };
 
-  const signInWithEmail = async (email: string, pass: string) => {
-    if (!email || !pass) {
-      return { success: false, error: 'Please enter both email and password.' };
+  // ── Auth actions ─────────────────────────────────────────────────
+  const signUpWithEmail = async (email: string, pass: string) => {
+    if (!email || !pass) return { success: false, error: 'Please fill in all fields.' };
+
+    const { data, error } = await supabase.auth.signUp({ email, password: pass });
+    if (error) return { success: false, error: error.message };
+    if (!data.user) return { success: false, error: 'Sign-up failed. Try again.' };
+
+    // Insert initial user row into public.users
+    const { error: insertError } = await supabase.from('users').insert({
+      id: data.user.id,
+      email: data.user.email ?? email,
+      onboarding_done: false,
+    });
+
+    if (insertError && insertError.code !== '23505') {
+      // 23505 = unique violation (user row already exists — harmless on retry)
+      console.warn('[Supabase] users insert error:', insertError.message);
     }
-    const mockUser: User = {
-      id: 'usr_' + Date.now().toString(36),
-      email,
-      name: email.split('@')[0],
-      provider: 'email',
-    };
-    setUser(mockUser);
-    await AsyncStorage.setItem(STORAGE_KEY_USER, JSON.stringify(mockUser));
+
     return { success: true };
   };
 
-  const signUpWithEmail = async (email: string, pass: string) => {
-    if (!email || !pass) {
-      return { success: false, error: 'Please enter all required fields.' };
-    }
-    const mockUser: User = {
-      id: 'usr_' + Date.now().toString(36),
-      email,
-      name: email.split('@')[0],
-      provider: 'email',
-    };
-    setUser(mockUser);
-    await AsyncStorage.setItem(STORAGE_KEY_USER, JSON.stringify(mockUser));
+  const signInWithEmail = async (email: string, pass: string) => {
+    if (!email || !pass) return { success: false, error: 'Please enter email and password.' };
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    if (error) return { success: false, error: error.message };
     return { success: true };
   };
 
   const signInWithGoogle = async () => {
-    // Simulated Google SSO identity return
-    const mockUser: User = {
-      id: 'usr_g_' + Math.random().toString(36).substring(2, 9),
-      email: 'student.athlete@aec.ac.in',
-      name: 'Arup Sarma',
-      provider: 'google',
-    };
-    setUser(mockUser);
-    // Google provides the identity and email; onboarding still collects campus info
-    setProfileState((prev) => ({
-      ...prev,
-      fullName: prev.fullName || 'Arup Sarma',
-      username: prev.username || 'arups',
-    }));
-    await AsyncStorage.setItem(STORAGE_KEY_USER, JSON.stringify(mockUser));
-    await persistOnboarding({
-      profile: {
-        fullName: profile.fullName || 'Arup Sarma',
-        username: profile.username || 'arups',
-      },
-    });
-    return { success: true };
+    // Google OAuth will be wired up in a future session using expo-auth-session.
+    return { success: false, error: 'Google sign-in is coming soon.' };
   };
 
+  // ── Profile actions ──────────────────────────────────────────────
   const updateProfile = async (updates: Partial<StudentProfile>) => {
     const updated = { ...profile, ...updates };
     setProfileState(updated);
     await persistOnboarding({ profile: updated });
+
+    // Sync to Supabase if logged in
+    if (user) {
+      await supabase.from('users').upsert({
+        id: user.id,
+        email: user.email,
+        full_name: updated.fullName,
+        username: updated.username,
+        college: updated.college,
+        department: updated.department,
+        academic_year: updated.academicYear,
+        avatar_url: updated.avatarUrl,
+        bio: updated.bio,
+      });
+    }
   };
 
   const toggleActivity = (actId: string) => {
@@ -197,9 +248,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const setActivities = (activityIds: string[]) => {
-    setSelectedActivities(activityIds);
-    persistOnboarding({ selectedActivities: activityIds });
+  const setActivities = (ids: string[]) => {
+    setSelectedActivities(ids);
+    persistOnboarding({ selectedActivities: ids });
   };
 
   const setLocationPermission = async (enabled: boolean) => {
@@ -209,7 +260,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const toggleClub = (clubId: string) => {
     setJoinedClubIds((prev) => {
-      const next = prev.includes(clubId) ? prev.filter((id) => id !== clubId) : [...prev, clubId];
+      const next = prev.includes(clubId)
+        ? prev.filter((id) => id !== clubId)
+        : [...prev, clubId];
       persistOnboarding({ joinedClubIds: next });
       return next;
     });
@@ -223,15 +276,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const completeOnboarding = async () => {
     setIsOnboardingCompleted(true);
     await persistOnboarding({ isCompleted: true });
+
+    // Mark in DB
+    if (user) {
+      await supabase.from('users').upsert({ id: user.id, email: user.email, onboarding_done: true });
+    }
   };
 
   const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
+    setProfileState(defaultProfile);
     setIsOnboardingCompleted(false);
-    await AsyncStorage.removeItem(STORAGE_KEY_USER);
+    await clearAllActivities();
+    // Keep onboarding cache but mark as not completed so re-login re-runs onboarding check
+    await persistOnboarding({ isCompleted: false });
   };
 
   const resetAll = async () => {
+    await supabase.auth.signOut();
     setUser(null);
     setProfileState(defaultProfile);
     setSelectedActivities([]);
@@ -239,19 +302,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setJoinedClubIds([]);
     setNotificationsEnabledState(false);
     setIsOnboardingCompleted(false);
-    await AsyncStorage.multiRemove([STORAGE_KEY_USER, STORAGE_KEY_ONBOARDING]);
+    await clearAllActivities();
+    await AsyncStorage.removeItem(STORAGE_KEY_ONBOARDING);
   };
 
   const getNextOnboardingRoute = (): string => {
-    if (!profile.fullName || !profile.username || !profile.college) {
-      return '/onboarding/profile';
-    }
-    if (selectedActivities.length === 0) {
-      return '/onboarding/activities';
-    }
+    if (!profile.fullName || !profile.username || !profile.college) return '/onboarding/profile';
+    if (selectedActivities.length === 0) return '/onboarding/activities';
     return '/onboarding/clubs';
   };
 
+  // ── Context value ─────────────────────────────────────────────────
   const value = useMemo(
     () => ({
       user,
@@ -293,9 +354,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
 }
