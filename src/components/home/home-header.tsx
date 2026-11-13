@@ -1,9 +1,13 @@
-import { Palette, Spacing, Typography } from '@/constants/theme';
-import { useAuth } from '@/context/auth-context';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
+import { useAuth } from '@/context/auth-context';
 
-export function HomeHeader() {
+interface HomeHeaderProps {
+  currentStreak?: number;
+}
+
+export function HomeHeader({ currentStreak = 0 }: HomeHeaderProps) {
   const { profile, user } = useAuth();
 
   const greeting = useMemo(() => {
@@ -12,6 +16,14 @@ export function HomeHeader() {
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
   }, []);
+
+  const displayName =
+    profile.fullName?.trim() ||
+    user?.name?.trim() ||
+    user?.email?.split('@')[0] ||
+    'Athlete';
+
+  const firstName = displayName.split(' ')[0];
 
   const dateLabel = useMemo(() => {
     const now = new Date();
@@ -25,9 +37,18 @@ export function HomeHeader() {
   return (
     <View style={styles.header}>
       <View style={styles.greetBlock}>
-        <Text style={styles.greetText}>{greeting}</Text>
+        <Text style={styles.greetText}>
+          {greeting}, {firstName} 👋
+        </Text>
         <Text style={styles.dateText}>{dateLabel}</Text>
       </View>
+
+      {currentStreak > 0 && (
+        <View style={styles.streakBadge}>
+          <Text style={styles.streakEmoji}>🔥</Text>
+          <Text style={styles.streakCount}>{currentStreak}</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -55,5 +76,23 @@ const styles = StyleSheet.create({
     color: Palette.muted,
     fontSize: 12.5,
     marginTop: 2,
+  },
+  streakBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Palette.forest,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: Radius.full,
+  },
+  streakEmoji: {
+    fontSize: 14,
+  },
+  streakCount: {
+    ...Typography.supporting,
+    fontSize: 13,
+    fontWeight: '800',
+    color: Palette.lime,
   },
 });
