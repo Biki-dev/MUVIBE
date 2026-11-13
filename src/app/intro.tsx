@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   Pressable,
+  Image,
   ScrollView,
   useWindowDimensions,
   NativeSyntheticEvent,
@@ -75,6 +76,8 @@ const SLIDES: Slide[] = [
   },
 ];
 
+const LOGO = require('../../assets/images/logo-round.png');
+
 export default function IntroScreen() {
   const router = useRouter();
   const { markIntroSeen } = useAuth();
@@ -103,9 +106,7 @@ export default function IntroScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.topBar}>
         <View style={styles.brandRow}>
-          <View style={styles.brandMark}>
-            <AppIcon name="flash" size={16} color={Palette.lime} />
-          </View>
+          <Image source={LOGO} style={styles.brandMark} />
           <Text style={styles.brandText}>MUVIBE</Text>
         </View>
         {!isLast && (
@@ -181,18 +182,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.space5,
     paddingVertical: Spacing.space3,
   },
+  brandMark: {
+    width: 28,
+    height: 28,
+  },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.space2,
-  },
-  brandMark: {
-    width: 28,
-    height: 28,
-    borderRadius: Radius.sm,
-    backgroundColor: Palette.forest,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   brandText: {
     ...Typography.cardHeading,

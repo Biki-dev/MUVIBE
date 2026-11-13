@@ -9,7 +9,6 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "icon": "./assets/expo.icon",
       "infoPlist": {
         "LSApplicationQueriesSchemes": [
           "instagram",
