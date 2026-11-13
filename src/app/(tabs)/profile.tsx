@@ -12,6 +12,7 @@ import { ActivityRecord, StreakInfo } from '@/types/activity';
 import { ProfileFitnessOverview, UserConnectionItem } from '@/types/profile';
 
 import { RankCard } from '@/components/game/rank-card';
+import { MobileWidgetSection } from '@/components/widgets/widget-card-section';
 import { ProfileHeader } from '@/components/profile/profile-header';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { FitnessOverview } from '@/components/profile/fitness-overview';
@@ -120,6 +121,9 @@ export default function ProfileScreen() {
           pendingRequests={socialStats.pendingIncoming}
           onRefreshSocial={loadData}
         />
+
+        {/* Section 2.5 — Mobile Home Screen Widgets Hub */}
+        <MobileWidgetSection activities={activities} streak={streakInfo} />
 
         {/* Section 3 — Rank, XP and tier. The hero of this screen. */}
         <RankCard />
