@@ -123,7 +123,7 @@ export function TodayActivity({ activities = [] }: TodayActivityProps) {
                 <AppIcon
                   name={stat.iconName}
                   size={15}
-                  color={stat.filled ? Palette.forest : Palette.muted}
+                  color={stat.filled ? Palette.lime : Palette.muted}
                 />
               </View>
               <Text style={[styles.statLabel, stat.filled && styles.statLabelActive]}>
