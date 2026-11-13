@@ -47,8 +47,20 @@ export default function ChallengeDetailScreen() {
     Math.round((challenge.progress / challenge.goal) * 100)
   );
 
-  const handleJoin = () => {
-    joinChallenge(challenge.id);
+  const formattedStartDate = new Date(challenge.startDate).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
+  const formattedEndDate = new Date(challenge.endDate).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
+  const handleJoin = async () => {
+    await joinChallenge(challenge.id);
   };
 
   const handleLeave = () => {
@@ -60,7 +72,9 @@ export default function ChallengeDetailScreen() {
         {
           text: 'Leave Challenge',
           style: 'destructive',
-          onPress: () => leaveChallenge(challenge.id),
+          onPress: async () => {
+            await leaveChallenge(challenge.id);
+          },
         },
       ]
     );
@@ -119,41 +133,51 @@ export default function ChallengeDetailScreen() {
             <View style={styles.sectionHeaderRow}>
               <View style={styles.sectionIconWrap}>
                 <AppIcon
-                  name={isCompleted ? 'checkmark-circle' : 'trending-up'}
+                  name={isCompleted ? 'checkmark-circle' : !challenge.isStarted ? 'time-outline' : 'trending-up'}
                   size={16}
                   color={Palette.forest}
                 />
               </View>
               <Text style={styles.sectionTitle}>
-                {isCompleted ? 'Challenge Completed' : 'Your Progress'}
+                {isCompleted ? 'Challenge Completed' : !challenge.isStarted ? 'Joined — Event Starts Soon' : 'Your Progress'}
               </Text>
             </View>
 
-            <View style={styles.progressValueRow}>
-              <Text style={styles.progressNumber}>
-                {challenge.progress.toLocaleString()}
-              </Text>
-              <Text style={styles.progressGoal}>
-                / {challenge.goal.toLocaleString()} {challenge.goalUnit}
-              </Text>
-            </View>
+            {!challenge.isStarted && !isCompleted ? (
+              <View style={{ paddingTop: 4 }}>
+                <Text style={{ ...Typography.body, color: Palette.muted, fontSize: 13, lineHeight: 18 }}>
+                  You are registered for this challenge! Live activity tracking will automatically begin on {formattedStartDate}.
+                </Text>
+              </View>
+            ) : (
+              <>
+                <View style={styles.progressValueRow}>
+                  <Text style={styles.progressNumber}>
+                    {challenge.progress.toLocaleString()}
+                  </Text>
+                  <Text style={styles.progressGoal}>
+                    / {challenge.goal.toLocaleString()} {challenge.goalUnit}
+                  </Text>
+                </View>
 
-            <View style={styles.progressTrack}>
-              <View
-                style={[
-                  styles.progressFill,
-                  { width: `${percentage}%` },
-                  isCompleted && styles.progressFillCompleted,
-                ]}
-              />
-            </View>
+                <View style={styles.progressTrack}>
+                  <View
+                    style={[
+                      styles.progressFill,
+                      { width: `${percentage}%` },
+                      isCompleted && styles.progressFillCompleted,
+                    ]}
+                  />
+                </View>
 
-            <View style={styles.progressFooter}>
-              <Text style={styles.progressPercentText}>{percentage}% Completed</Text>
-              <Text style={styles.progressRemainingText}>
-                {isCompleted ? 'All milestones achieved' : `${challenge.remainingDays} days remaining`}
-              </Text>
-            </View>
+                <View style={styles.progressFooter}>
+                  <Text style={styles.progressPercentText}>{percentage}% Completed</Text>
+                  <Text style={styles.progressRemainingText}>
+                    {isCompleted ? 'All milestones achieved' : `${challenge.remainingDays} days remaining`}
+                  </Text>
+                </View>
+              </>
+            )}
           </View>
         )}
 
@@ -179,12 +203,12 @@ export default function ChallengeDetailScreen() {
 
             <View style={styles.objectiveItem}>
               <Text style={styles.objectiveLabel}>Start Date</Text>
-              <Text style={styles.objectiveValue}>{challenge.startDate}</Text>
+              <Text style={styles.objectiveValue}>{formattedStartDate}</Text>
             </View>
 
             <View style={styles.objectiveItem}>
               <Text style={styles.objectiveLabel}>End Date</Text>
-              <Text style={styles.objectiveValue}>{challenge.endDate}</Text>
+              <Text style={styles.objectiveValue}>{formattedEndDate}</Text>
             </View>
           </View>
         </View>
@@ -278,23 +302,31 @@ export default function ChallengeDetailScreen() {
             <Text style={styles.sectionTitle}>Participants ({challenge.participantsCount.toLocaleString()})</Text>
           </View>
 
-          <View style={styles.participantsList}>
-            {challenge.participantsPreview.map((p) => (
-              <View key={p.id} style={styles.participantItem}>
-                <View
-                  style={[
-                    styles.participantAvatar,
-                    { backgroundColor: p.avatarColor },
-                  ]}>
-                  <Text style={styles.participantEmoji}>{p.avatarEmoji}</Text>
+          {challenge.participantsPreview.length > 0 ? (
+            <View style={styles.participantsList}>
+              {challenge.participantsPreview.map((p) => (
+                <View key={p.id} style={styles.participantItem}>
+                  <View
+                    style={[
+                      styles.participantAvatar,
+                      { backgroundColor: p.avatarColor },
+                    ]}>
+                    <Text style={styles.participantEmoji}>{p.avatarEmoji}</Text>
+                  </View>
+                  <View style={styles.participantInfo}>
+                    <Text style={styles.participantName}>{p.name}</Text>
+                    <Text style={styles.participantUsername}>@{p.username}</Text>
+                  </View>
                 </View>
-                <View style={styles.participantInfo}>
-                  <Text style={styles.participantName}>{p.name}</Text>
-                  <Text style={styles.participantUsername}>@{p.username}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
+              ))}
+            </View>
+          ) : (
+            <View style={{ paddingVertical: 12 }}>
+              <Text style={{ ...Typography.body, color: Palette.muted, fontSize: 13 }}>
+                No participants yet. Be the first to join this challenge!
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
 

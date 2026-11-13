@@ -89,7 +89,11 @@ export function ChallengeCard({ challenge, onJoin }: ChallengeCardProps) {
 
         <View style={styles.metaItem}>
           <AppIcon name="time-outline" size={13} color={Palette.muted} />
-          <Text style={styles.metaText}>{challenge.remainingDays}d remaining</Text>
+          <Text style={styles.metaText}>
+            {challenge.isStarted
+              ? `${challenge.remainingDays}d left`
+              : `Starts ${new Date(challenge.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`}
+          </Text>
         </View>
       </View>
 

@@ -72,10 +72,16 @@ export function FeaturedChallengeCard({
         <View style={styles.infoDivider} />
 
         <View style={styles.infoCol}>
-          <Text style={styles.infoLabel}>Ends</Text>
+          <Text style={styles.infoLabel}>{challenge.isStarted ? 'Ends' : 'Starts'}</Text>
           <View style={styles.infoValueWrap}>
             <AppIcon name="time-outline" size={14} color={Palette.muted} />
-            <Text style={styles.infoValue}>Sunday</Text>
+            <Text style={styles.infoValue}>
+              {challenge.isStarted
+                ? challenge.remainingDays > 0
+                  ? `${challenge.remainingDays}d left`
+                  : 'Ends today'
+                : new Date(challenge.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+            </Text>
           </View>
         </View>
       </View>

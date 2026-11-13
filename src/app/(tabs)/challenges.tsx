@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import React, { useState, useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from 'expo-router';
 import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
 import { useChallenges } from '@/context/challenge-context';
 import { ChallengeCategory } from '@/types/challenge';
@@ -15,12 +16,25 @@ import { CompletedChallengeCard } from '@/components/challenge/completed-challen
 import { EmptyState } from '@/components/challenge/empty-state';
 
 export default function ChallengesScreen() {
-  const { challenges, activeChallenges, completedChallenges, joinChallenge } = useChallenges();
+  const { challenges, activeChallenges, completedChallenges, joinChallenge, refreshChallenges } = useChallenges();
 
   const [viewMode, setViewMode] = useState<ChallengeViewMode>('discover');
   const [selectedCategory, setSelectedCategory] = useState<ChallengeCategory>('for_you');
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyFilterType>('all');
   const [myChallengesTab, setMyChallengesTab] = useState<'active' | 'completed'>('active');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshChallenges();
+    }, [refreshChallenges])
+  );
+
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshChallenges();
+    setIsRefreshing(false);
+  };
 
   // Featured challenge
   const featuredChallenge = useMemo(
@@ -52,7 +66,15 @@ export default function ChallengesScreen() {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={Palette.forest}
+            colors={[Palette.forest]}
+          />
+        }>
         {/* Section 1 — Page Header */}
         <ChallengeHeader />
 

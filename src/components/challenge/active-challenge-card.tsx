@@ -30,7 +30,10 @@ export function ActiveChallengeCard({ challenge }: ActiveChallengeCardProps) {
         <View style={styles.titleWrap}>
           <Text style={styles.title}>{challenge.title}</Text>
           <Text style={styles.categoryText}>
-            {challenge.category.toUpperCase()} • {challenge.remainingDays} DAYS REMAINING
+            {challenge.category.toUpperCase()} •{' '}
+            {challenge.isStarted
+              ? `${challenge.remainingDays} DAYS REMAINING`
+              : `STARTS ${new Date(challenge.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }).toUpperCase()}`}
           </Text>
         </View>
 

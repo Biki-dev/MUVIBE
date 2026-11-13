@@ -2,15 +2,8 @@ export type ChallengeCategory = 'for_you' | 'individual' | 'squad' | 'campus';
 
 export type ChallengeDifficulty = 'beginner' | 'intermediate' | 'advanced';
 
-export type ChallengeMeasurement =
-  | 'steps'
-  | 'distance_km'
-  | 'active_minutes'
-  | 'calories'
-  | 'jump_count'
-  | 'activity_count'
-  | 'team_steps'
-  | 'team_distance_km';
+// Strictly steps and km per app requirements
+export type ChallengeMeasurement = 'steps' | 'distance_km';
 
 export type ChallengeStatus = 'not_joined' | 'active' | 'completed';
 
@@ -57,6 +50,7 @@ export interface Challenge {
   startDate: string;
   endDate: string;
   remainingDays: number;
+  isStarted: boolean;
   featured: boolean;
   coverGradient: {
     bg: string;
