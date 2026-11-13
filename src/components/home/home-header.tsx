@@ -104,6 +104,7 @@ const styles = StyleSheet.create({
     color: Palette.muted,
     fontWeight: '500',
     marginTop: 6,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
