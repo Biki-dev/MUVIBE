@@ -1,8 +1,11 @@
-import { Tabs } from 'expo-router';
-import { Palette } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
+import { Palette } from '@/constants/theme';
+import { Tabs } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
@@ -13,8 +16,8 @@ export default function TabsLayout() {
           backgroundColor: Palette.white,
           borderTopColor: Palette.border,
           borderTopWidth: 1,
-          height: 60,
-          paddingBottom: 8,
+          height: 60 + insets.bottom,
+          paddingBottom: 8 + insets.bottom,
           paddingTop: 6,
         },
         tabBarLabelStyle: {
