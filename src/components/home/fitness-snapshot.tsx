@@ -30,8 +30,6 @@ export function FitnessSnapshot({
       value: totalDistanceKm.toFixed(1),
       unit: 'km',
       iconName: 'navigate',
-      bg: Palette.forest,
-      textColor: Palette.lime,
     },
     {
       id: 'calories',
@@ -39,8 +37,6 @@ export function FitnessSnapshot({
       value: totalCalories >= 1000 ? `${(totalCalories / 1000).toFixed(1)}k` : totalCalories.toString(),
       unit: 'kcal',
       iconName: 'flame',
-      bg: Palette.amber,
-      textColor: Palette.white,
     },
     {
       id: 'activities',
@@ -48,8 +44,6 @@ export function FitnessSnapshot({
       value: totalActivities.toString(),
       unit: 'logged',
       iconName: 'pulse',
-      bg: Palette.electricBlue,
-      textColor: Palette.white,
     },
     {
       id: 'time',
@@ -57,8 +51,6 @@ export function FitnessSnapshot({
       value: totalMinutes >= 60 ? `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m` : totalMinutes.toString(),
       unit: totalMinutes >= 60 ? 'this year' : 'mins',
       iconName: 'time',
-      bg: '#1AAC96',
-      textColor: Palette.white,
     },
   ];
 
@@ -67,13 +59,18 @@ export function FitnessSnapshot({
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={styles.sectionTitle}>Lifetime Overview</Text>
-          <Text style={styles.subtitle}>
-            {currentStreak > 0
-              ? `🔥 ${currentStreak}-day streak · Best: ${longestStreak} days`
-              : `Best streak: ${longestStreak} days`}
-          </Text>
+          {currentStreak > 0 ? (
+            <View style={styles.streakSubtitleRow}>
+              <AppIcon name="flame-outline" size={12} color={Palette.amber} />
+              <Text style={styles.subtitle}>
+                {currentStreak}-day streak · Best: {longestStreak} days
+              </Text>
+            </View>
+          ) : (
+            <Text style={styles.subtitle}>Best streak: {longestStreak} days</Text>
+          )}
         </View>
         <Pressable
           onPress={() => router.push('/(tabs)/profile' as any)}
@@ -86,17 +83,24 @@ export function FitnessSnapshot({
 
       <View style={styles.grid}>
         {cards.map((card) => (
-          <View key={card.id} style={[styles.card, { backgroundColor: card.bg }]}>
-            <AppIcon name={card.iconName} size={18} color={card.textColor} />
-            <Text style={[styles.cardValue, { color: card.textColor }]}>
-              {card.value}
-            </Text>
-            <Text style={[styles.cardUnit, { color: card.textColor + 'CC' }]}>
-              {card.unit}
-            </Text>
-            <Text style={[styles.cardLabel, { color: card.textColor + '99' }]}>
-              {card.label}
-            </Text>
+          <View key={card.id} style={styles.card}>
+            {/* Diagonal stripe accent overlay */}
+            <View style={styles.stripeContainer} pointerEvents="none">
+              <View style={[styles.diagonalStripe, styles.stripe1]} />
+              <View style={[styles.diagonalStripe, styles.stripe2]} />
+              <View style={[styles.diagonalStripe, styles.stripe3]} />
+            </View>
+
+            <View style={styles.cardContent}>
+              <View style={styles.iconContainer}>
+                <AppIcon name={card.iconName} size={15} color={Palette.forest} />
+              </View>
+              <View>
+                <Text style={styles.cardValue}>{card.value}</Text>
+                <Text style={styles.cardUnit}>{card.unit}</Text>
+              </View>
+              <Text style={styles.cardLabel}>{card.label}</Text>
+            </View>
           </View>
         ))}
       </View>
@@ -120,10 +124,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
+  streakSubtitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
   subtitle: {
     fontSize: 11.5,
     color: Palette.muted,
-    marginTop: 2,
   },
   profileBtn: {
     flexDirection: 'row',
@@ -145,24 +154,73 @@ const styles = StyleSheet.create({
   card: {
     width: '48%',
     flexGrow: 1,
+    backgroundColor: Palette.white,
     borderRadius: Radius.card,
+    borderWidth: 1,
+    borderColor: Palette.border,
+    minHeight: 110,
+    overflow: 'hidden',
+  },
+  stripeContainer: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 90,
+    height: 90,
+    overflow: 'hidden',
+    opacity: 0.4,
+  },
+  diagonalStripe: {
+    position: 'absolute',
+    height: 2,
+    backgroundColor: Palette.border,
+    transform: [{ rotate: '-45deg' }],
+  },
+  stripe1: {
+    top: 20,
+    right: -25,
+    width: 120,
+  },
+  stripe2: {
+    top: 40,
+    right: -25,
+    width: 120,
+  },
+  stripe3: {
+    top: 60,
+    right: -25,
+    width: 120,
+  },
+  cardContent: {
     padding: Spacing.space3 + 2,
-    minHeight: 90,
+    flex: 1,
     justifyContent: 'space-between',
+  },
+  iconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: Radius.sm,
+    backgroundColor: Palette.surfaceSubtle,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cardValue: {
     fontSize: 22,
     fontWeight: '800',
+    color: Palette.ink,
     letterSpacing: -0.5,
-    marginTop: 4,
+    marginTop: 6,
   },
   cardUnit: {
     fontSize: 11,
     fontWeight: '600',
+    color: Palette.muted,
     marginTop: 1,
   },
   cardLabel: {
-    fontSize: 11,
+    fontSize: 12,
+    fontWeight: '600',
+    color: Palette.muted,
     marginTop: 4,
   },
 });
