@@ -9,7 +9,7 @@ interface AppIconProps {
   name: string;
   type?: IconType;
   size?: number;
-  color?: string | ColorValue;
+  color?: any;
 }
 
 export function AppIcon({
