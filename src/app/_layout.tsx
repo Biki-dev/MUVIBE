@@ -32,6 +32,8 @@ export default function RootLayout() {
             <Stack.Screen name="challenge" options={{ animation: 'slide_from_right' }} />
             <Stack.Screen name="club" options={{ animation: 'slide_from_right' }} />
             <Stack.Screen name="event" options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="profile" options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="settings" options={{ animation: 'slide_from_right' }} />
           </Stack>
         </CommunityProvider>
       </ChallengeProvider>

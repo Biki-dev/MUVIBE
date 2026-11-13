@@ -74,6 +74,19 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, focused }) => (
+            <AppIcon
+              name={focused ? 'person' : 'person-outline'}
+              size={22}
+              color={color}
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
