@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
-import { ActivityRecord } from '@/types/activity';
-import { StreakInfo } from '@/types/activity';
+import { AppIcon } from '@/components/ui/icon';
+import { ActivityRecord, StreakInfo } from '@/types/activity';
 
 type DayState = 'completed' | 'missed' | 'today' | 'upcoming';
 
@@ -88,7 +88,8 @@ export function WeeklyCalendar({ activities = [], streak }: WeeklyCalendarProps)
         </View>
         {(streak?.currentStreak ?? 0) > 0 && (
           <View style={styles.streakPill}>
-            <Text style={styles.streakText}>🔥 {streak?.currentStreak}d streak</Text>
+            <AppIcon name="flame-outline" size={13} color={Palette.lime} />
+            <Text style={styles.streakText}>{streak?.currentStreak}d streak</Text>
           </View>
         )}
       </View>
@@ -172,6 +173,9 @@ const styles = StyleSheet.create({
     color: Palette.muted,
   },
   streakPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     backgroundColor: Palette.forest,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -180,7 +184,7 @@ const styles = StyleSheet.create({
   streakText: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: Palette.lime,
+    color: Palette.white,
   },
   daysRow: {
     flexDirection: 'row',
