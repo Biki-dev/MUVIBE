@@ -1,6 +1,6 @@
-import { Tabs } from 'expo-router';
-import { Palette } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
+import { Palette } from '@/constants/theme';
+import { Tabs } from 'expo-router';
 
 export default function TabsLayout() {
   return (
@@ -62,12 +62,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="community"
         options={{
-          title: 'Explore',
+          title: 'Community',
           tabBarIcon: ({ color, focused }) => (
             <AppIcon
-              name={focused ? 'compass' : 'compass-outline'}
+              name={focused ? 'people' : 'people-outline'}
               size={22}
               color={color}
             />
