@@ -1,0 +1,24 @@
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Palette, Spacing, Typography } from '@/constants/theme';
+
+export function HomeHeader() {
+  return (
+    <View style={styles.header}>
+      <Text style={styles.brandTitle}>MUVIBE</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  header: {
+    paddingVertical: Spacing.space3,
+    marginBottom: Spacing.space2,
+  },
+  brandTitle: {
+    ...Typography.pageTitle,
+    color: Palette.forest,
+    letterSpacing: -0.5,
+    fontWeight: '800',
+  },
+});

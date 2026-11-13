@@ -58,6 +58,7 @@ export default function ProfileCustomizationScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardContainer}>
         <ScrollView
+          style={styles.scroll}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled">
@@ -148,19 +149,19 @@ export default function ProfileCustomizationScreen() {
               />
             </View>
           </View>
-
-          {/* Bottom Button */}
-          <View style={styles.bottomBar}>
-            <Button
-              label="Save & Continue"
-              variant="primary"
-              size="lg"
-              onPress={handleContinue}
-              icon={<AppIcon name="arrow-forward" size={18} color={Palette.ink} />}
-              iconPosition="right"
-            />
-          </View>
         </ScrollView>
+
+        {/* Sticky bottom button — always visible, never inside ScrollView */}
+        <View style={styles.bottomBar}>
+          <Button
+            label="Save & Continue"
+            variant="primary"
+            size="lg"
+            onPress={handleContinue}
+            icon={<AppIcon name="arrow-forward" size={18} color={Palette.ink} />}
+            iconPosition="right"
+          />
+        </View>
       </KeyboardAvoidingView>
 
       {/* Photo / Avatar Selector Modal */}
@@ -247,10 +248,13 @@ const styles = StyleSheet.create({
   keyboardContainer: {
     flex: 1,
   },
+  scroll: {
+    flex: 1,
+  },
   scrollContent: {
     paddingHorizontal: Spacing.space4,
     paddingTop: Spacing.space2,
-    paddingBottom: Spacing.space6,
+    paddingBottom: Spacing.space4,
     maxWidth: 520,
     width: '100%',
     alignSelf: 'center',
@@ -383,8 +387,15 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   bottomBar: {
-    marginTop: Spacing.space4,
+    paddingHorizontal: Spacing.space4,
+    paddingTop: Spacing.space3,
+    paddingBottom: Spacing.space4,
+    backgroundColor: Palette.canvas,
+    borderTopWidth: 1,
+    borderTopColor: Palette.border,
+    maxWidth: 520,
     width: '100%',
+    alignSelf: 'center',
   },
   modalOverlay: {
     flex: 1,

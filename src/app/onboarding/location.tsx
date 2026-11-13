@@ -35,6 +35,7 @@ export default function LocationPermissionScreen() {
       />
 
       <ScrollView
+        style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
         {/* Radar / Campus Discovery Graphic */}
@@ -102,26 +103,26 @@ export default function LocationPermissionScreen() {
             </View>
           </View>
         </View>
-
-        {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
-          <Button
-            label="Enable location"
-            variant="primary"
-            size="lg"
-            onPress={handleEnableLocation}
-            loading={isProcessing}
-            icon={<AppIcon name="navigate" size={18} color={Palette.ink} />}
-          />
-
-          <Button
-            label="Choose college manually / Not now"
-            variant="outline"
-            size="md"
-            onPress={handleNotNow}
-          />
-        </View>
       </ScrollView>
+
+      {/* Sticky bottom buttons — always visible, never inside ScrollView */}
+      <View style={styles.bottomBar}>
+        <Button
+          label="Enable location"
+          variant="primary"
+          size="lg"
+          onPress={handleEnableLocation}
+          loading={isProcessing}
+          icon={<AppIcon name="navigate" size={18} color={Palette.ink} />}
+        />
+
+        <Button
+          label="Choose college manually / Not now"
+          variant="outline"
+          size="md"
+          onPress={handleNotNow}
+        />
+      </View>
     </SafeAreaView>
   );
 }
@@ -131,14 +132,28 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Palette.canvas,
   },
+  scroll: {
+    flex: 1,
+  },
   scrollContent: {
     paddingHorizontal: Spacing.space4,
     paddingTop: Spacing.space2,
-    paddingBottom: Spacing.space6,
+    paddingBottom: Spacing.space4,
     maxWidth: 500,
     width: '100%',
     alignSelf: 'center',
-    alignItems: 'center',
+  },
+  bottomBar: {
+    paddingHorizontal: Spacing.space4,
+    paddingTop: Spacing.space3,
+    paddingBottom: Spacing.space4,
+    gap: Spacing.space3,
+    backgroundColor: Palette.canvas,
+    borderTopWidth: 1,
+    borderTopColor: Palette.border,
+    maxWidth: 500,
+    width: '100%',
+    alignSelf: 'center',
   },
   graphicCard: {
     width: '100%',
@@ -256,9 +271,5 @@ const styles = StyleSheet.create({
     ...Typography.supporting,
     color: Palette.muted,
     lineHeight: 17,
-  },
-  buttonContainer: {
-    width: '100%',
-    gap: Spacing.space3,
   },
 });
