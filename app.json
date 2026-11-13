@@ -9,7 +9,13 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "infoPlist": {
+        "LSApplicationQueriesSchemes": [
+          "instagram",
+          "instagram-stories"
+        ]
+      }
     },
     "android": {
       "package": "com.muvibe.app",
@@ -24,6 +30,20 @@
         "android.permission.ACTIVITY_RECOGNITION",
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ],
+          "data": [
+            {
+              "scheme": "instagram-stories"
+            }
+          ]
+        }
       ]
     },
     "web": {
@@ -50,6 +70,15 @@
         "expo-sensors",
         {
           "motionPermission": "MUVIBE counts your steps with the phone's pedometer while you track a walk or run."
+        }
+      ],
+      "expo-sharing",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "MUVIBE saves your activity story card to your photo library so you can share it to Instagram.",
+          "savePhotosPermission": "MUVIBE saves your activity story card to your camera roll.",
+          "isAccessMediaLocationEnabled": false
         }
       ]
     ],

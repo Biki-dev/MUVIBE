@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
-import { ActivityType } from '@/types/activity';
+import { ActivityType, ActivityRecord } from '@/types/activity';
 import {
   createSession,
   getElapsedSeconds,
@@ -31,6 +31,8 @@ import {
 import { saveActivity } from '@/services/activity-storage';
 import { SensorTracker, SensorSnapshot, describeSensors } from '@/services/sensors';
 import { RouteMap } from '@/components/activity/route-map';
+import { useAuth } from '@/context/auth-context';
+import { InstaShareModal } from '@/components/share/insta-share-modal';
 
 const EMPTY_SNAPSHOT: SensorSnapshot = {
   steps: 0,
@@ -181,6 +183,7 @@ export default function TrackingScreen() {
   const params = useLocalSearchParams<{ type?: string }>();
   const activityType: ActivityType = (params.type as ActivityType) || 'walking';
   const meta: ActivityMeta = ACTIVITY_METAS[activityType] || ACTIVITY_METAS.other;
+  const { profile } = useAuth();
 
   const [session, setSession] = useState<TrackingSession>(() =>
     createSession(activityType)
@@ -190,6 +193,10 @@ export default function TrackingScreen() {
 
   // Completion modal state
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
+
+  // Instagram share state
+  const [savedActivity, setSavedActivity] = useState<ActivityRecord | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [finalDurationSec, setFinalDurationSec] = useState(0);
   const [finalDistanceInput, setFinalDistanceInput] = useState('');
   const [finalStepsInput, setFinalStepsInput] = useState('');
@@ -370,7 +377,7 @@ export default function TrackingScreen() {
       trackingMode = 'sensor';
     }
 
-    await saveActivity({
+    const record = await saveActivity({
       type: activityType,
       startedAt: startTimeDate.toISOString(),
       endedAt: now.toISOString(),
@@ -387,7 +394,10 @@ export default function TrackingScreen() {
 
     setIsSaving(false);
     setIsCompletionModalOpen(false);
-    router.replace('/(tabs)/activity' as any);
+
+    // Show Instagram share prompt before navigating away
+    setSavedActivity(record);
+    setShowShareModal(true);
   };
 
   const handleDiscard = () => {
@@ -812,6 +822,20 @@ export default function TrackingScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* ── Instagram Share Modal ── */}
+      {savedActivity && (
+        <InstaShareModal
+          visible={showShareModal}
+          onClose={() => {
+            setShowShareModal(false);
+            router.replace('/(tabs)/activity' as any);
+          }}
+          activity={savedActivity}
+          username={profile.username || 'muvibe_user'}
+          avatarUrl={profile.avatarUrl}
+        />
+      )}
     </SafeAreaView>
   );
 }
