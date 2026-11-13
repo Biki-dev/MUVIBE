@@ -36,6 +36,19 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="activity"
+        options={{
+          title: 'Activity',
+          tabBarIcon: ({ color, focused }) => (
+            <AppIcon
+              name={focused ? 'pulse' : 'pulse-outline'}
+              size={22}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="explore"
         options={{
           title: 'Explore',
