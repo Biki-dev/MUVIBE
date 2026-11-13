@@ -51,6 +51,12 @@
         {
           "motionPermission": "MUVIBE counts your steps with the phone's pedometer while you track a walk or run."
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow MUVIBE to access your camera for real-time MediaPipe AI pose estimation and form-gated rep counting."
+        }
       ]
     ],
     "experiments": {
