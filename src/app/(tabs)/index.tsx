@@ -12,6 +12,7 @@ import { ActivityRecord, StreakInfo, ActivityStats } from '@/types/activity';
 
 // Home section components
 import { HomeHeader } from '@/components/home/home-header';
+import { MobileWidgetSection } from '@/components/widgets/widget-card-section';
 import { WeeklyCalendar } from '@/components/home/weekly-calendar';
 import { TodayActivity } from '@/components/home/today-activity';
 import { QuickActions } from '@/components/home/quick-actions';
@@ -100,12 +101,12 @@ export default function HomeScreen() {
           />
         }>
         {/* Section 1 — Personalized greeting + date + streak badge */}
-        {/* HomeHeader takes no props: the streak badge moved into
-            FitnessSnapshot upstream, but this caller still passed
-            currentStreak, which TypeScript rejected. */}
         <HomeHeader />
 
-        {/* Section 2 — Weekly Calendar (real activity states per day) */}
+        {/* Section 2 — Phone Home Screen Widgets Setup */}
+        <MobileWidgetSection activities={activities} streak={streak} />
+
+        {/* Section 3 — Weekly Calendar (real activity states per day) */}
         <WeeklyCalendar activities={activities} streak={streak} />
 
         {/* Section 3 — Today's real stats from Supabase activities */}
