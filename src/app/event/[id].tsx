@@ -149,7 +149,7 @@ export default function EventDetailScreen() {
             </View>
 
             <View style={styles.timelineList}>
-              {event.schedule.map((item, idx) => (
+              {event.schedule.map((item: any, idx: number) => (
                 <View key={idx} style={styles.timelineItem}>
                   <View style={styles.timelinePointWrap}>
                     <View style={styles.timelineDot} />
@@ -195,7 +195,7 @@ export default function EventDetailScreen() {
           </View>
 
           <View style={styles.participantsList}>
-            {event.participantsPreview.map((p, idx) => (
+            {event.participantsPreview.map((p: any, idx: number) => (
               <View key={idx} style={styles.participantRow}>
                 <View style={[styles.pAvatar, { backgroundColor: p.avatarColor }]}>
                   <Text style={styles.pEmoji}>{p.avatarEmoji}</Text>

@@ -1,4 +1,16 @@
-import React from 'react';
+/**
+ * src/app/club/[id].tsx
+ * ─────────────────────────────────────────────────────────────────
+ * Comprehensive Club Screen.
+ * Connected to Supabase:
+ * - Club Profile & Information.
+ * - Club-specific Member Leaderboard with full stats (points, km, workouts, steps).
+ * - Reddit-like Club Discussion Feed (posts, upvotes/downvotes, comments, links, images).
+ * - Club Challenges linked to app challenges.
+ * - Dynamic Join / Member status.
+ * ─────────────────────────────────────────────────────────────────
+ */
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,20 +18,68 @@ import {
   ScrollView,
   Pressable,
   Alert,
+  RefreshControl,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { useCommunity } from '@/context/community-context';
+import { useAuth } from '@/context/auth-context';
+import {
+  fetchClubLeaderboard,
+  fetchClubPosts,
+  fetchClubChallenges,
+} from '@/services/community-service';
+import { ClubMemberRankItem, ClubDiscussionPost } from '@/types/community';
+import { Challenge } from '@/types/challenge';
+import { ClubLeaderboardTab } from '@/components/community/clubs/club-leaderboard-tab';
+import { ClubDiscussionTab } from '@/components/community/clubs/club-discussion-tab';
+import { ClubChallengesTab } from '@/components/community/clubs/club-challenges-tab';
+
+type ClubTab = 'overview' | 'leaderboard' | 'discussion' | 'challenges';
 
 export default function ClubDetailScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ id?: string }>();
-  const { getClubById, toggleJoinClub } = useCommunity();
+  const { user } = useAuth();
+  const { getClubById, toggleJoinClub, refreshCommunity } = useCommunity();
 
   const club = getClubById(params.id || '');
+  const [activeTab, setActiveTab] = useState<ClubTab>('overview');
+
+  const [leaderboard, setLeaderboard] = useState<ClubMemberRankItem[]>([]);
+  const [posts, setPosts] = useState<ClubDiscussionPost[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const loadClubData = useCallback(async () => {
+    if (!params.id) return;
+    try {
+      const [lb, psts, chs] = await Promise.all([
+        fetchClubLeaderboard(params.id, user?.id),
+        fetchClubPosts(params.id, user?.id),
+        fetchClubChallenges(params.id, user?.id),
+      ]);
+      setLeaderboard(lb);
+      setPosts(psts);
+      setChallenges(chs);
+    } catch (err) {
+      console.warn('[ClubDetailScreen] loadClubData error:', err);
+    }
+  }, [params.id, user?.id]);
+
+  useEffect(() => {
+    loadClubData();
+  }, [loadClubData]);
+
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    await Promise.all([refreshCommunity(), loadClubData()]);
+    setIsRefreshing(false);
+  };
 
   if (!club) {
     return (
@@ -39,22 +99,26 @@ export default function ClubDetailScreen() {
     );
   }
 
-  const handleToggleJoin = () => {
+  const handleToggleJoin = async () => {
     if (club.joined) {
       Alert.alert(
         'Leave Club?',
-        `Are you sure you want to leave ${club.name}? You can rejoin anytime.`,
+        `Are you sure you want to leave ${club.name}? Your member contribution will be preserved.`,
         [
           { text: 'Cancel', style: 'cancel' },
           {
             text: 'Leave Club',
             style: 'destructive',
-            onPress: () => toggleJoinClub(club.id),
+            onPress: async () => {
+              await toggleJoinClub(club.id);
+              await loadClubData();
+            },
           },
         ]
       );
     } else {
-      toggleJoinClub(club.id);
+      await toggleJoinClub(club.id);
+      await loadClubData();
     }
   };
 
@@ -71,9 +135,19 @@ export default function ClubDetailScreen() {
         <View style={{ width: 36 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={Palette.forest}
+            colors={[Palette.forest]}
+          />
+        }>
         {/* 1. Club Header Banner */}
-        <View style={[styles.bannerCard, { backgroundColor: club.coverColor }]}>
+        <View style={[styles.bannerCard, { backgroundColor: club.coverColor || '#18352D' }]}>
           <View style={styles.categoryBadge}>
             <Text style={styles.categoryBadgeText}>{club.categoryLabel}</Text>
           </View>
@@ -82,152 +156,141 @@ export default function ClubDetailScreen() {
           <View style={styles.memberCountRow}>
             <AppIcon name="people" size={14} color={Palette.lime} />
             <Text style={styles.memberCountText}>
-              {club.memberCount.toLocaleString()} campus members
+              {club.memberCount.toLocaleString()} registered campus members
             </Text>
           </View>
         </View>
 
-        {/* 3. Club Statistics Grid */}
-        <View style={styles.statsCard}>
-          <View style={styles.statCol}>
-            <Text style={styles.statValue}>{club.memberCount}</Text>
-            <Text style={styles.statLabel}>Members</Text>
-          </View>
+        {/* 2. Sub-Navigation Tabs */}
+        <View style={styles.tabsContainer}>
+          <Pressable
+            onPress={() => setActiveTab('overview')}
+            style={[styles.tabButton, activeTab === 'overview' && styles.tabButtonActive]}>
+            <Text style={[styles.tabText, activeTab === 'overview' && styles.tabTextActive]}>
+              Overview
+            </Text>
+          </Pressable>
 
-          <View style={styles.statDivider} />
+          <Pressable
+            onPress={() => setActiveTab('leaderboard')}
+            style={[styles.tabButton, activeTab === 'leaderboard' && styles.tabButtonActive]}>
+            <Text style={[styles.tabText, activeTab === 'leaderboard' && styles.tabTextActive]}>
+              Leaderboard
+            </Text>
+          </Pressable>
 
-          <View style={styles.statCol}>
-            <Text style={styles.statValue}>{club.stats.activitiesOrganized}</Text>
-            <Text style={styles.statLabel}>Activities</Text>
-          </View>
+          <Pressable
+            onPress={() => setActiveTab('discussion')}
+            style={[styles.tabButton, activeTab === 'discussion' && styles.tabButtonActive]}>
+            <Text style={[styles.tabText, activeTab === 'discussion' && styles.tabTextActive]}>
+              Discussion
+            </Text>
+          </Pressable>
 
-          <View style={styles.statDivider} />
-
-          <View style={styles.statCol}>
-            <Text style={styles.statValue}>{club.stats.totalHoursLogged}h</Text>
-            <Text style={styles.statLabel}>Logged</Text>
-          </View>
+          <Pressable
+            onPress={() => setActiveTab('challenges')}
+            style={[styles.tabButton, activeTab === 'challenges' && styles.tabButtonActive]}>
+            <Text style={[styles.tabText, activeTab === 'challenges' && styles.tabTextActive]}>
+              Challenges
+            </Text>
+          </Pressable>
         </View>
 
-        {/* 2. About the Club */}
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeaderRow}>
-            <View style={styles.sectionIconWrap}>
-              <AppIcon name="information-circle-outline" size={16} color={Palette.forest} />
-            </View>
-            <Text style={styles.sectionTitle}>About the Club</Text>
-          </View>
-
-          <Text style={styles.longDesc}>{club.longDescription}</Text>
-
-          <View style={styles.meetingLocationBox}>
-            <AppIcon name="location-outline" size={16} color={Palette.forest} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.locationTitle}>Meeting Ground</Text>
-              <Text style={styles.locationText}>{club.meetingLocation}</Text>
-            </View>
-          </View>
-
-          <View style={styles.interestsWrap}>
-            <Text style={styles.interestsTitle}>Club Interests</Text>
-            <View style={styles.interestsChipsRow}>
-              {club.interests.map((interest, idx) => (
-                <View key={idx} style={styles.interestChip}>
-                  <Text style={styles.interestChipText}>{interest}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        </View>
-
-        {/* 4. Upcoming Activities */}
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeaderRow}>
-            <View style={styles.sectionIconWrap}>
-              <AppIcon name="calendar-outline" size={16} color={Palette.forest} />
-            </View>
-            <Text style={styles.sectionTitle}>Upcoming Activities</Text>
-          </View>
-
-          <View style={styles.activitiesList}>
-            {club.upcomingActivities.map((act) => (
-              <View key={act.id} style={styles.activityItem}>
-                <View style={styles.actTitleRow}>
-                  <Text style={styles.actName}>{act.name}</Text>
-                  <Text style={styles.actDate}>{act.date}</Text>
-                </View>
-                <View style={styles.actDetailsRow}>
-                  <AppIcon name="time-outline" size={13} color={Palette.muted} />
-                  <Text style={styles.actDetailText}>{act.time}</Text>
-                </View>
-                <View style={styles.actDetailsRow}>
-                  <AppIcon name="location-outline" size={13} color={Palette.muted} />
-                  <Text style={styles.actDetailText}>{act.venue}</Text>
-                </View>
-                <Text style={styles.actOrganizer}>Lead: {act.organizer}</Text>
+        {/* Tab 1: Overview */}
+        {activeTab === 'overview' && (
+          <>
+            {/* Club Statistics Grid */}
+            <View style={styles.statsCard}>
+              <View style={styles.statCol}>
+                <Text style={styles.statValue}>{club.memberCount}</Text>
+                <Text style={styles.statLabel}>Members</Text>
               </View>
-            ))}
-          </View>
-        </View>
 
-        {/* 5. Club Announcements */}
-        {club.announcements.length > 0 && (
-          <View style={styles.sectionCard}>
-            <View style={styles.sectionHeaderRow}>
-              <View style={styles.sectionIconWrap}>
-                <AppIcon name="megaphone-outline" size={16} color={Palette.forest} />
+              <View style={styles.statDivider} />
+
+              <View style={styles.statCol}>
+                <Text style={styles.statValue}>{club.totalDistanceKm} km</Text>
+                <Text style={styles.statLabel}>Distance</Text>
               </View>
-              <Text style={styles.sectionTitle}>Announcements</Text>
+
+              <View style={styles.statDivider} />
+
+              <View style={styles.statCol}>
+                <Text style={styles.statValue}>{club.totalPoints.toLocaleString()}</Text>
+                <Text style={styles.statLabel}>Total Pts</Text>
+              </View>
             </View>
 
-            <View style={styles.announcementsList}>
-              {club.announcements.map((ann) => (
-                <View key={ann.id} style={styles.announcementItem}>
-                  <View style={styles.annHeaderRow}>
-                    <Text style={styles.annTitle}>{ann.title}</Text>
-                    <Text style={styles.annDate}>{ann.date}</Text>
+            {/* About the Club */}
+            <View style={styles.sectionCard}>
+              <View style={styles.sectionHeaderRow}>
+                <View style={styles.sectionIconWrap}>
+                  <AppIcon name="information-circle-outline" size={16} color={Palette.forest} />
+                </View>
+                <Text style={styles.sectionTitle}>About the Club</Text>
+              </View>
+
+              <Text style={styles.longDesc}>{club.longDescription || club.description}</Text>
+
+              <View style={styles.meetingLocationBox}>
+                <AppIcon name="location-outline" size={16} color={Palette.forest} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.locationTitle}>Meeting Ground</Text>
+                  <Text style={styles.locationText}>{club.meetingLocation}</Text>
+                </View>
+              </View>
+
+              {club.interests && club.interests.length > 0 && (
+                <View style={styles.interestsWrap}>
+                  <Text style={styles.interestsTitle}>Club Focus & Disciplines</Text>
+                  <View style={styles.interestsChipsRow}>
+                    {club.interests.map((interest, idx) => (
+                      <View key={idx} style={styles.interestChip}>
+                        <Text style={styles.interestChipText}>{interest}</Text>
+                      </View>
+                    ))}
                   </View>
-                  <Text style={styles.annContent}>{ann.content}</Text>
                 </View>
-              ))}
+              )}
             </View>
-          </View>
+          </>
         )}
 
-        {/* 6. Members Preview */}
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeaderRow}>
-            <View style={styles.sectionIconWrap}>
-              <AppIcon name="people-outline" size={16} color={Palette.forest} />
-            </View>
-            <Text style={styles.sectionTitle}>Leadership & Members ({club.memberCount})</Text>
-          </View>
+        {/* Tab 2: Leaderboard */}
+        {activeTab === 'leaderboard' && (
+          <ClubLeaderboardTab
+            members={leaderboard}
+            isJoined={club.joined}
+            onJoinPress={handleToggleJoin}
+          />
+        )}
 
-          <View style={styles.membersList}>
-            {club.members.map((member) => (
-              <View key={member.id} style={styles.memberRow}>
-                <View style={[styles.memberAvatar, { backgroundColor: member.avatarColor }]}>
-                  <Text style={styles.memberEmoji}>{member.avatarEmoji}</Text>
-                </View>
-                <View style={styles.memberInfo}>
-                  <View style={styles.memberNameRow}>
-                    <Text style={styles.memberName}>{member.name}</Text>
-                    {member.role === 'admin' && (
-                      <View style={styles.adminBadge}>
-                        <Text style={styles.adminBadgeText}>LEAD</Text>
-                      </View>
-                    )}
-                  </View>
-                  <Text style={styles.memberUsername}>@{member.username}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
+        {/* Tab 3: Discussion (Reddit-like) */}
+        {activeTab === 'discussion' && (
+          <ClubDiscussionTab
+            clubId={club.id}
+            posts={posts}
+            isJoined={club.joined}
+            userId={user?.id}
+            onRefresh={loadClubData}
+          />
+        )}
+
+        {/* Tab 4: Challenges */}
+        {activeTab === 'challenges' && (
+          <ClubChallengesTab
+            clubName={club.name}
+            challenges={challenges}
+          />
+        )}
       </ScrollView>
 
-      {/* 7. Sticky Bottom Bar */}
-      <View style={styles.bottomBar}>
+      {/* Sticky Bottom Bar */}
+      <View
+        style={[
+          styles.bottomBar,
+          { paddingBottom: Math.max(Spacing.space4, insets.bottom + 8) },
+        ]}>
         {!club.joined ? (
           <Button
             label="Join Club"
@@ -308,72 +371,106 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.space3,
   },
   categoryBadge: {
-    alignSelf: 'flex-start',
     backgroundColor: 'rgba(255, 255, 255, 0.18)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: Radius.full,
+    alignSelf: 'flex-start',
     marginBottom: Spacing.space2,
   },
   categoryBadgeText: {
     ...Typography.supporting,
-    fontSize: 10.5,
+    fontSize: 11,
     fontWeight: '700',
     color: Palette.white,
+    letterSpacing: 0.5,
   },
   bannerTitle: {
     ...Typography.pageTitle,
-    fontSize: 24,
+    fontSize: 22,
+    lineHeight: 28,
     color: Palette.white,
-    fontWeight: '800',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   bannerCollege: {
     ...Typography.body,
+    color: 'rgba(255, 255, 255, 0.85)',
     fontSize: 13,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginBottom: Spacing.space2,
+    marginBottom: Spacing.space2 + 2,
   },
   memberCountRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 6,
   },
   memberCountText: {
     ...Typography.supporting,
     fontSize: 12,
-    fontWeight: '700',
     color: Palette.lime,
+    fontWeight: '700',
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    backgroundColor: Palette.surfaceSubtle,
+    borderRadius: Radius.full,
+    padding: 3,
+    marginBottom: Spacing.space4,
+    borderWidth: 1,
+    borderColor: Palette.border,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 7,
+    alignItems: 'center',
+    borderRadius: Radius.full,
+  },
+  tabButtonActive: {
+    backgroundColor: Palette.white,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  tabText: {
+    ...Typography.supporting,
+    fontSize: 11.5,
+    fontWeight: '600',
+    color: Palette.muted,
+  },
+  tabTextActive: {
+    color: Palette.forest,
+    fontWeight: '700',
   },
   statsCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-around',
     backgroundColor: Palette.white,
     borderRadius: Radius.card,
     borderWidth: 1,
     borderColor: Palette.border,
-    paddingVertical: Spacing.space3,
-    paddingHorizontal: Spacing.space4,
+    paddingVertical: Spacing.space3 + 2,
     marginBottom: Spacing.space4,
   },
   statCol: {
-    flex: 1,
     alignItems: 'center',
+    flex: 1,
   },
   statValue: {
     ...Typography.stats,
-    fontSize: 20,
+    fontSize: 16,
     color: Palette.ink,
+    marginBottom: 2,
   },
   statLabel: {
     ...Typography.supporting,
     fontSize: 11,
     color: Palette.muted,
-    marginTop: 2,
   },
   statDivider: {
     width: 1,
-    height: 28,
+    height: 26,
     backgroundColor: Palette.border,
   },
   sectionCard: {
@@ -391,9 +488,9 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.space3,
   },
   sectionIconWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: Radius.sm,
+    width: 26,
+    height: 26,
+    borderRadius: 6,
     backgroundColor: Palette.surfaceSubtle,
     alignItems: 'center',
     justifyContent: 'center',
@@ -405,10 +502,10 @@ const styles = StyleSheet.create({
   },
   longDesc: {
     ...Typography.body,
-    fontSize: 13.5,
+    fontSize: 13,
     color: Palette.ink,
     lineHeight: 19,
-    marginBottom: Spacing.space3,
+    marginBottom: Spacing.space4,
   },
   meetingLocationBox: {
     flexDirection: 'row',
@@ -417,29 +514,31 @@ const styles = StyleSheet.create({
     backgroundColor: Palette.surfaceHighlight,
     borderRadius: Radius.sm,
     padding: Spacing.space3,
-    borderWidth: 1,
-    borderColor: Palette.border,
-    marginBottom: Spacing.space3,
+    marginBottom: Spacing.space4,
   },
   locationTitle: {
     ...Typography.supporting,
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: '700',
     color: Palette.forest,
-    marginBottom: 1,
+    marginBottom: 2,
   },
   locationText: {
     ...Typography.body,
     fontSize: 12.5,
     color: Palette.ink,
   },
-  interestsWrap: {},
+  interestsWrap: {
+    borderTopWidth: 1,
+    borderTopColor: Palette.surfaceSubtle,
+    paddingTop: Spacing.space3,
+  },
   interestsTitle: {
     ...Typography.supporting,
     fontSize: 11.5,
     fontWeight: '700',
     color: Palette.muted,
-    marginBottom: 6,
+    marginBottom: Spacing.space2,
   },
   interestsChipsRow: {
     flexDirection: 'row',
@@ -448,142 +547,17 @@ const styles = StyleSheet.create({
   },
   interestChip: {
     backgroundColor: Palette.surfaceSubtle,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: Radius.full,
     borderWidth: 1,
     borderColor: Palette.border,
   },
   interestChipText: {
     ...Typography.supporting,
-    fontSize: 11.5,
+    fontSize: 11,
     color: Palette.ink,
     fontWeight: '500',
-  },
-  activitiesList: {
-    gap: 10,
-  },
-  activityItem: {
-    backgroundColor: Palette.surfaceHighlight,
-    borderRadius: Radius.sm,
-    padding: Spacing.space3,
-    borderWidth: 1,
-    borderColor: Palette.border,
-  },
-  actTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  actName: {
-    ...Typography.bodyBold,
-    fontSize: 13.5,
-    color: Palette.ink,
-    flex: 1,
-  },
-  actDate: {
-    ...Typography.supporting,
-    fontSize: 11.5,
-    fontWeight: '700',
-    color: Palette.forest,
-  },
-  actDetailsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    marginTop: 2,
-  },
-  actDetailText: {
-    ...Typography.supporting,
-    fontSize: 12,
-    color: Palette.muted,
-  },
-  actOrganizer: {
-    ...Typography.supporting,
-    fontSize: 11,
-    color: Palette.muted,
-    marginTop: 4,
-  },
-  announcementsList: {
-    gap: 10,
-  },
-  announcementItem: {
-    backgroundColor: Palette.surfaceHighlight,
-    borderRadius: Radius.sm,
-    padding: Spacing.space3,
-    borderWidth: 1,
-    borderColor: Palette.border,
-  },
-  annHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  annTitle: {
-    ...Typography.bodyBold,
-    fontSize: 13,
-    color: Palette.ink,
-    flex: 1,
-  },
-  annDate: {
-    ...Typography.supporting,
-    fontSize: 11,
-    color: Palette.muted,
-  },
-  annContent: {
-    ...Typography.body,
-    fontSize: 12.5,
-    color: Palette.muted,
-    lineHeight: 17,
-  },
-  membersList: {
-    gap: 8,
-  },
-  memberRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  memberAvatar: {
-    width: 34,
-    height: 34,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  memberEmoji: {
-    fontSize: 16,
-  },
-  memberInfo: {
-    flex: 1,
-  },
-  memberNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  memberName: {
-    ...Typography.bodyBold,
-    fontSize: 13,
-    color: Palette.ink,
-  },
-  adminBadge: {
-    backgroundColor: Palette.lime,
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: Radius.full,
-  },
-  adminBadgeText: {
-    fontSize: 8.5,
-    fontWeight: '800',
-    color: Palette.ink,
-  },
-  memberUsername: {
-    ...Typography.supporting,
-    fontSize: 11,
-    color: Palette.muted,
   },
   bottomBar: {
     paddingHorizontal: Spacing.space4,
@@ -599,16 +573,18 @@ const styles = StyleSheet.create({
   joinedActionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'space-between',
+    gap: Spacing.space3,
   },
   joinedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
     backgroundColor: 'rgba(197, 243, 107, 0.3)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: Radius.btn,
+    flex: 1,
   },
   joinedBadgeText: {
     ...Typography.bodyBold,
@@ -616,6 +592,6 @@ const styles = StyleSheet.create({
     color: Palette.forest,
   },
   leaveBtnWrap: {
-    flex: 1,
+    minWidth: 110,
   },
 });

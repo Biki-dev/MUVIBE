@@ -9,22 +9,6 @@ export type ClubCategory =
   | 'general'
   | 'other';
 
-export interface ClubAnnouncement {
-  id: string;
-  title: string;
-  date: string;
-  content: string;
-}
-
-export interface ClubUpcomingActivity {
-  id: string;
-  name: string;
-  date: string;
-  time: string;
-  venue: string;
-  organizer: string;
-}
-
 export interface ClubMember {
   id: string;
   name: string;
@@ -32,6 +16,53 @@ export interface ClubMember {
   role: 'admin' | 'member';
   avatarColor: string;
   avatarEmoji: string;
+}
+
+export interface ClubMemberRankItem {
+  rank: number;
+  userId: string;
+  name: string;
+  username: string;
+  role: 'admin' | 'member';
+  avatarColor: string;
+  avatarEmoji: string;
+  points: number;
+  distanceKm: number;
+  activitiesCount: number;
+  steps: number;
+  isCurrentUser?: boolean;
+}
+
+export interface ClubDiscussionPost {
+  id: string;
+  clubId: string;
+  userId: string;
+  authorName: string;
+  authorUsername: string;
+  authorAvatarColor: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  linkUrl?: string;
+  upvotes: number;
+  downvotes: number;
+  score: number;
+  userVote: 1 | -1 | 0;
+  commentsCount: number;
+  createdAt: string;
+  formattedDate: string;
+}
+
+export interface ClubPostComment {
+  id: string;
+  postId: string;
+  userId: string;
+  authorName: string;
+  authorUsername: string;
+  authorAvatarColor: string;
+  content: string;
+  createdAt: string;
+  formattedDate: string;
 }
 
 export interface CommunityClub {
@@ -48,16 +79,32 @@ export interface CommunityClub {
   joined: boolean;
   featured: boolean;
   coverColor: string;
-  stats: {
+  totalPoints: number;
+  totalDistanceKm: number;
+  totalActivities: number;
+  stats?: {
     activitiesOrganized: number;
     upcomingEventsCount: number;
     totalHoursLogged: number;
   };
-  announcements: ClubAnnouncement[];
-  upcomingActivities: ClubUpcomingActivity[];
-  members: ClubMember[];
+  announcements?: {
+    id: string;
+    title: string;
+    date: string;
+    content: string;
+  }[];
+  upcomingActivities?: {
+    id: string;
+    name: string;
+    date: string;
+    time: string;
+    venue: string;
+    organizer: string;
+  }[];
+  members?: ClubMember[];
 }
 
+// ── Legacy Types preserved for backward compatibility ─────────────
 export type LeaderboardCategory = 'individual' | 'department' | 'squad';
 export type LeaderboardPeriod = 'weekly' | 'monthly' | 'all_time';
 

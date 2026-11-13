@@ -1,33 +1,41 @@
-import React, { useRef } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+/**
+ * src/app/(tabs)/community.tsx
+ * ─────────────────────────────────────────────────────────────────
+ * Community Screen.
+ * Connected directly to Supabase clubs, joined clubs, discover clubs,
+ * and campus-wide club standings.
+ * ─────────────────────────────────────────────────────────────────
+ */
+import React, { useRef, useState, useCallback } from 'react';
+import { ScrollView, StyleSheet, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from 'expo-router';
 import { Palette, Spacing } from '@/constants/theme';
 import { useCommunity } from '@/context/community-context';
 import { CommunityHeader } from '@/components/community/community-header';
-import { CommunitySectionSelector } from '@/components/community/community-section-selector';
 import { MyClubs } from '@/components/community/clubs/my-clubs';
 import { DiscoverClubs } from '@/components/community/clubs/discover-clubs';
-import { LeaderboardSection } from '@/components/community/leaderboard/leaderboard-section';
-import { EventsSection } from '@/components/community/events/events-section';
+import { CampusClubsLeaderboard } from '@/components/community/clubs/campus-clubs-leaderboard';
 
 export default function CommunityScreen() {
-  const {
-    activeSection,
-    setActiveSection,
-    clubs,
-    myClubs,
-    toggleJoinClub,
-    events,
-    myEvents,
-    pastEvents,
-    toggleRegisterEvent,
-  } = useCommunity();
-
+  const { clubs, myClubs, campusLeaderboard, toggleJoinClub, refreshCommunity } = useCommunity();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const scrollRef = useRef<any>(null);
 
+  useFocusEffect(
+    useCallback(() => {
+      refreshCommunity();
+    }, [refreshCommunity])
+  );
+
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshCommunity();
+    setIsRefreshing(false);
+  };
+
   const handleExploreClubs = () => {
-    // Scroll down to Discover Clubs area
-    scrollRef.current?.scrollTo({ y: 240, animated: true });
+    scrollRef.current?.scrollTo({ y: 220, animated: true });
   };
 
   return (
@@ -35,43 +43,33 @@ export default function CommunityScreen() {
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={Palette.forest}
+            colors={[Palette.forest]}
+          />
+        }>
         {/* Section 1 — Page Header */}
         <CommunityHeader />
 
-        {/* Section 2 — Community Navigation: Clubs | Leaderboard | Events */}
-        <CommunitySectionSelector
-          activeSection={activeSection}
-          onSelectSection={setActiveSection}
+        {/* Section 2 — Joined Clubs */}
+        <MyClubs
+          clubs={myClubs}
+          onToggleJoin={toggleJoinClub}
+          onExploreClubs={handleExploreClubs}
         />
 
-        {/* Section 3 — Clubs */}
-        {activeSection === 'clubs' && (
-          <>
-            <MyClubs
-              clubs={myClubs}
-              onToggleJoin={toggleJoinClub}
-              onExploreClubs={handleExploreClubs}
-            />
-            <DiscoverClubs
-              clubs={clubs}
-              onToggleJoin={toggleJoinClub}
-            />
-          </>
-        )}
+        {/* Section 3 — Discover Campus Clubs (Search & Filter) */}
+        <DiscoverClubs
+          clubs={clubs}
+          onToggleJoin={toggleJoinClub}
+        />
 
-        {/* Section 4 — Leaderboard */}
-        {activeSection === 'leaderboard' && <LeaderboardSection />}
-
-        {/* Section 5 — Events */}
-        {activeSection === 'events' && (
-          <EventsSection
-            events={events}
-            myEvents={myEvents}
-            pastEvents={pastEvents}
-            onToggleRegister={toggleRegisterEvent}
-          />
-        )}
+        {/* Section 4 — Campus Club Standings (All Clubs Leaderboard) */}
+        <CampusClubsLeaderboard clubs={campusLeaderboard} />
       </ScrollView>
     </SafeAreaView>
   );

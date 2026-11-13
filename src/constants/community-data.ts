@@ -23,6 +23,9 @@ export const INITIAL_CLUBS: CommunityClub[] = [
     joined: true,
     featured: true,
     coverColor: '#18352D',
+    totalPoints: 4850,
+    totalDistanceKm: 1240.5,
+    totalActivities: 312,
     stats: {
       activitiesOrganized: 48,
       upcomingEventsCount: 3,
@@ -82,6 +85,9 @@ export const INITIAL_CLUBS: CommunityClub[] = [
     joined: false,
     featured: false,
     coverColor: '#162C25',
+    totalPoints: 4210,
+    totalDistanceKm: 3180.0,
+    totalActivities: 248,
     stats: {
       activitiesOrganized: 32,
       upcomingEventsCount: 2,
@@ -125,6 +131,9 @@ export const INITIAL_CLUBS: CommunityClub[] = [
     joined: true,
     featured: false,
     coverColor: '#1F2925',
+    totalPoints: 3920,
+    totalDistanceKm: 450.0,
+    totalActivities: 410,
     stats: {
       activitiesOrganized: 64,
       upcomingEventsCount: 4,
@@ -168,6 +177,9 @@ export const INITIAL_CLUBS: CommunityClub[] = [
     joined: false,
     featured: false,
     coverColor: '#2C1D18',
+    totalPoints: 3150,
+    totalDistanceKm: 890.0,
+    totalActivities: 140,
     stats: {
       activitiesOrganized: 18,
       upcomingEventsCount: 1,
@@ -211,6 +223,9 @@ export const INITIAL_CLUBS: CommunityClub[] = [
     joined: false,
     featured: false,
     coverColor: '#172E27',
+    totalPoints: 3360,
+    totalDistanceKm: 210.0,
+    totalActivities: 275,
     stats: {
       activitiesOrganized: 82,
       upcomingEventsCount: 5,
@@ -254,6 +269,9 @@ export const INITIAL_CLUBS: CommunityClub[] = [
     joined: false,
     featured: false,
     coverColor: '#1E2B25',
+    totalPoints: 2840,
+    totalDistanceKm: 180.0,
+    totalActivities: 195,
     stats: {
       activitiesOrganized: 50,
       upcomingEventsCount: 2,
