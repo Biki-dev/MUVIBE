@@ -1,4 +1,4 @@
-import { Challenger } from '@/types/blitz';
+import { BlitzMode, BlitzModeSpec, Challenger } from '@/types/blitz';
 
 export const NEARBY_CHALLENGERS: Challenger[] = [
   {
@@ -117,9 +117,32 @@ export const CAMPUS_BRAWL_CHALLENGERS: Challenger[] = [
   },
 ];
 
-export const BLITZ_EXERCISES = [
-  { id: 'pushups', name: 'Form-Gated Push-ups', angleTarget: 90, unit: 'reps', icon: 'fitness-outline' },
-  { id: 'squats', name: 'Parallel Squats', angleTarget: 90, unit: 'reps', icon: 'body-outline' },
-  { id: 'burpees', name: 'Speed Burpees', angleTarget: 80, unit: 'reps', icon: 'flash-outline' },
+export const BLITZ_MODES: BlitzModeSpec[] = [
+  {
+    id: 'run',
+    name: 'Sprint Blitz',
+    tagline: 'Cover the most ground in 60 seconds',
+    durationSeconds: 60,
+    measurement: 'distance_km',
+    unit: 'm',
+    icon: 'walk',
+    // 200m in a minute is a brisk but ordinary student sprint pace.
+    parScore: 200,
+  },
+  {
+    id: 'walk',
+    name: 'Step Blitz',
+    tagline: 'Most steps in 90 seconds wins',
+    durationSeconds: 90,
+    measurement: 'steps',
+    unit: 'steps',
+    icon: 'footsteps',
+    // ~120 steps a minute is a normal brisk walking cadence.
+    parScore: 180,
+  },
 ];
 
+export const BLITZ_MODE_BY_ID: Record<BlitzMode, BlitzModeSpec> = {
+  run: BLITZ_MODES[0],
+  walk: BLITZ_MODES[1],
+};

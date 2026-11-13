@@ -13,6 +13,12 @@ export default function TabsLayout() {
   // content is squashed instead of lifted.
   const insets = useSafeAreaInsets();
 
+  // The full inset has to be reserved or the Android navigation bar
+  // sits on top of the tabs. What it must NOT do is get added twice:
+  // the bar used to pad an extra 8px on top of the inset, which made
+  // it taller than its contents and left a white band above the icons.
+  const bottomInset = insets.bottom;
+
   return (
     <Tabs
       screenOptions={{
@@ -23,8 +29,8 @@ export default function TabsLayout() {
           backgroundColor: Palette.white,
           borderTopColor: Palette.border,
           borderTopWidth: 1,
-          height: BAR_CONTENT_HEIGHT + insets.bottom,
-          paddingBottom: insets.bottom + 8,
+          height: BAR_CONTENT_HEIGHT + bottomInset,
+          paddingBottom: bottomInset,
           paddingTop: 6,
         },
         tabBarLabelStyle: {
