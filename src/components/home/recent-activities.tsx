@@ -13,15 +13,15 @@ const ACTIVITY_META: Record<
   string,
   { label: string; iconName: string; iconType: 'ion' | 'mci'; color: string; bg: string }
 > = {
-  walking: { label: 'Walking', iconName: 'walk', iconType: 'mci', color: Palette.forest, bg: '#EEF7E0' },
-  running: { label: 'Running', iconName: 'run', iconType: 'mci', color: Palette.amber, bg: '#FFF3E0' },
-  cycling: { label: 'Cycling', iconName: 'bicycle-outline', iconType: 'ion', color: Palette.electricBlue, bg: '#E8F0FF' },
-  gym: { label: 'Gym', iconName: 'barbell-outline', iconType: 'ion', color: '#D4578F', bg: '#FDE8F0' },
-  yoga: { label: 'Yoga', iconName: 'body-outline', iconType: 'ion', color: '#1AAC96', bg: '#E0FAF7' },
-  jump_rope: { label: 'Jump Rope', iconName: 'timer-outline', iconType: 'ion', color: Palette.amber, bg: '#FFF8E8' },
-  swimming: { label: 'Swimming', iconName: 'water-outline', iconType: 'ion', color: Palette.electricBlue, bg: '#E8F0FF' },
-  hiking: { label: 'Hiking', iconName: 'trail-sign-outline', iconType: 'ion', color: '#8B6F47', bg: '#F5EFE0' },
-  other: { label: 'Activity', iconName: 'pulse-outline', iconType: 'ion', color: Palette.muted, bg: Palette.surfaceSubtle },
+  running: { label: 'Running', iconName: 'run', iconType: 'mci', bg: Palette.forest, color: Palette.lime },
+  walking: { label: 'Walking', iconName: 'walk', iconType: 'mci', bg: '#EEF7E0', color: Palette.forest },
+  cycling: { label: 'Cycling', iconName: 'bicycle-outline', iconType: 'ion', bg: Palette.forest, color: Palette.lime },
+  gym: { label: 'Gym', iconName: 'barbell-outline', iconType: 'ion', bg: '#EEF7E0', color: Palette.forest },
+  yoga: { label: 'Yoga', iconName: 'body-outline', iconType: 'ion', bg: Palette.forest, color: Palette.lime },
+  jump_rope: { label: 'Jump Rope', iconName: 'timer-outline', iconType: 'ion', bg: '#EEF7E0', color: Palette.forest },
+  swimming: { label: 'Swimming', iconName: 'water-outline', iconType: 'ion', bg: Palette.forest, color: Palette.lime },
+  other: { label: 'Activity', iconName: 'pulse-outline', iconType: 'ion', bg: '#EEF7E0', color: Palette.forest },
+  hiking: { label: 'Hiking', iconName: 'trail-sign-outline', iconType: 'ion', bg: Palette.forest, color: Palette.lime },
 };
 
 function formatDuration(seconds: number): string {
