@@ -25,6 +25,15 @@
         "--clear"
       ],
       "port": 8081
+    },
+    {
+      "name": "blitz-socket-server",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "server/index.js"
+      ],
+      "port": 3001,
+      "url": "http://localhost:3001"
     }
   ]
 }

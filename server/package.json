@@ -1,0 +1,17 @@
+{
+  "name": "muvibe-blitz-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Socket.IO server for MUVIBE Blitz Battle private rooms.",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "cors": "2.8.5",
+    "express": "4.21.2",
+    "socket.io": "4.8.1"
+  }
+}

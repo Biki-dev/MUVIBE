@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Palette, Radius, Spacing, Typography, FontFamily } from '@/constants/theme';
 import { AppIcon } from '@/components/ui/icon';
 import { useAuth } from '@/context/auth-context';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { WearableSection } from '@/components/settings/wearable-section';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -23,22 +25,19 @@ export default function SettingsScreen() {
     await setNotifications(val);
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Log Out of MUVIBE?',
-      'Are you sure you want to log out? Your activity records and achievements will remain securely saved on this device.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Log Out',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/auth' as any);
-          },
-        },
-      ]
-    );
+  // A system alert is a no-op on web, so the confirmation is a real
+  // Modal and the sign-out runs from this screen's own state.
+  const [confirmingLogout, setConfirmingLogout] = useState(false);
+
+  const handleLogout = async () => {
+    setConfirmingLogout(false);
+    try {
+      await logout();
+    } finally {
+      // Leave for the auth screen either way: staying put would show a
+      // signed-out user their old data.
+      router.replace('/auth' as any);
+    }
   };
 
   return (
@@ -69,7 +68,10 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
 
-        {/* B. Preferences */}
+        {/* B. Connected devices */}
+        <WearableSection />
+
+        {/* C. Preferences */}
         <View style={styles.groupCard}>
           <Text style={styles.groupHeading}>PREFERENCES</Text>
           <View style={styles.itemRow}>
@@ -107,7 +109,7 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* C. App Settings */}
+        {/* D. App Settings */}
         <View style={styles.groupCard}>
           <Text style={styles.groupHeading}>APP & SUPPORT</Text>
           <Pressable
@@ -151,14 +153,24 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* D. Logout */}
+        {/* E. Logout */}
         <Pressable
-          onPress={handleLogout}
+          onPress={() => setConfirmingLogout(true)}
           style={({ pressed }) => [styles.logoutBtn, pressed && styles.logoutBtnPressed]}>
           <AppIcon name="log-out-outline" size={18} color={Palette.coral} />
           <Text style={styles.logoutText}>Log Out</Text>
         </Pressable>
       </ScrollView>
+
+      <ConfirmDialog
+        visible={confirmingLogout}
+        title="Log out of MUVIBE?"
+        message="Your activity records and achievements stay on your account. You can sign back in any time."
+        confirmLabel="Log Out"
+        destructive
+        onConfirm={handleLogout}
+        onCancel={() => setConfirmingLogout(false)}
+      />
     </SafeAreaView>
   );
 }

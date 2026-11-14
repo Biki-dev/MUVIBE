@@ -22,7 +22,6 @@ import { AchievementsSection } from '@/components/profile/achievements-section';
 import { MyClubsSection } from '@/components/profile/my-clubs-section';
 import { MyChallengesSection } from '@/components/profile/my-challenges-section';
 import { ActivityHighlights } from '@/components/profile/activity-highlights';
-import { SettingsList } from '@/components/profile/settings-list';
 
 export default function ProfileScreen() {
   const { user, profile, refreshProfile } = useAuth();
@@ -150,8 +149,6 @@ export default function ProfileScreen() {
         {/* Section 8 — Activity Highlights (real data) */}
         <ActivityHighlights activities={activities} />
 
-        {/* Section 9 — Settings & Account */}
-        <SettingsList />
       </ScrollView>
     </SafeAreaView>
   );

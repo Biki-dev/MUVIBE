@@ -22,9 +22,12 @@
  * ─────────────────────────────────────────────────────────────────
  */
 const os = require('os');
+const http = require('http');
 const { spawn } = require('child_process');
 
 const PORT = process.argv[2] || '8081';
+/** Where server/index.js listens. */
+const SOCKET_PORT = process.env.BLITZ_SOCKET_PORT || '3001';
 
 /** Interfaces that exist but are not reachable from a phone on the Wi-Fi. */
 function isVirtual(name, address) {
@@ -65,15 +68,43 @@ if (!lan) {
 }
 
 const url = `http://${lan.address}:${PORT}`;
+
+// Blitz private rooms talk to server/index.js. The phone cannot reach
+// it on localhost, so point the app at the same LAN address the dev
+// server is using. An explicit EXPO_PUBLIC_SOCKET_URL still wins, for
+// when the match server lives somewhere else.
+const socketUrl =
+  process.env.EXPO_PUBLIC_SOCKET_URL || `http://${lan.address}:${SOCKET_PORT}`;
+
 console.log(`\nServing to phones at ${url}  (interface: ${lan.name})`);
+console.log(`Blitz match server      ${socketUrl}`);
 console.log('Scan the QR code with Expo Go. Phone and PC must share the Wi-Fi.\n');
+
+// Say so up front if the match server is down: the Blitz room screen
+// would otherwise just sit there failing to connect.
+http
+  .get(`${socketUrl}/health`, { timeout: 2000 }, (res) => {
+    if (res.statusCode === 200) console.log('Match server is up.\n');
+    res.resume();
+  })
+  .on('error', () => {
+    console.log('Match server is NOT running. Private rooms will not connect.');
+    console.log('Start it in another terminal:  npm run server\n');
+  })
+  .on('timeout', function () {
+    this.destroy();
+  });
 
 // --go forces Expo Go mode. Without it the CLI defaults to development
 // build mode and prints an exp+muvibe:// deep link, which Expo Go cannot
 // open, so the project simply never appears on the phone.
 const child = spawn('npx', ['expo', 'start', '--go', '--port', PORT], {
   cwd: require('path').join(__dirname, '..'),
-  env: { ...process.env, EXPO_PACKAGER_PROXY_URL: url },
+  env: {
+    ...process.env,
+    EXPO_PACKAGER_PROXY_URL: url,
+    EXPO_PUBLIC_SOCKET_URL: socketUrl,
+  },
   stdio: 'inherit',
   shell: true,
 });
