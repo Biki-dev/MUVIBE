@@ -14,6 +14,9 @@ import { ChallengeCard } from '@/components/challenge/challenge-card';
 import { ActiveChallengeCard } from '@/components/challenge/active-challenge-card';
 import { CompletedChallengeCard } from '@/components/challenge/completed-challenge-card';
 import { EmptyState } from '@/components/challenge/empty-state';
+import { BlitzChallengeCard } from '@/components/challenge/blitz-challenge-card';
+import { BlitzModal } from '@/components/home/blitz-modal';
+import { BlitzMode, BlitzQueueType } from '@/types/blitz';
 
 export default function ChallengesScreen() {
   const { challenges, activeChallenges, completedChallenges, joinChallenge, refreshChallenges } = useChallenges();
@@ -23,6 +26,24 @@ export default function ChallengesScreen() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyFilterType>('all');
   const [myChallengesTab, setMyChallengesTab] = useState<'active' | 'completed'>('active');
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Blitz Battle: short run / walk bouts against a rival.
+  const [blitzModalVisible, setBlitzModalVisible] = useState(false);
+  const [selectedBlitzQueue, setSelectedBlitzQueue] = useState<BlitzQueueType>('stranger');
+  const [selectedBlitzMode, setSelectedBlitzMode] = useState<BlitzMode | undefined>(undefined);
+
+  const handleOpenBlitzQueue = (queue: BlitzQueueType) => {
+    setSelectedBlitzQueue(queue);
+    setSelectedBlitzMode(undefined);
+    setBlitzModalVisible(true);
+  };
+
+  // Tapping a bout tile skips the queue step and goes straight to it.
+  const handleStartBlitzMode = (mode: BlitzMode) => {
+    setSelectedBlitzQueue('stranger');
+    setSelectedBlitzMode(mode);
+    setBlitzModalVisible(true);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -77,6 +98,12 @@ export default function ChallengesScreen() {
         }>
         {/* Section 1 — Page Header */}
         <ChallengeHeader />
+
+        {/* Blitz Battle: run or walk bouts */}
+        <BlitzChallengeCard
+          onSelectQueue={handleOpenBlitzQueue}
+          onStartMode={handleStartBlitzMode}
+        />
 
         {/* View Mode Switcher (Discover vs My Challenges) */}
         <ViewModeToggle
@@ -202,6 +229,14 @@ export default function ChallengesScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Blitz Battle sheet */}
+      <BlitzModal
+        visible={blitzModalVisible}
+        initialQueue={selectedBlitzQueue}
+        initialMode={selectedBlitzMode}
+        onClose={() => setBlitzModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }

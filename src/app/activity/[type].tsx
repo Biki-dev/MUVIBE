@@ -223,14 +223,20 @@ export default function TrackingScreen() {
   const applySnapshot = (snap: SensorSnapshot) => {
     setSensors(snap);
     setSession((prev) => {
-      const steps = snap.pedometer === 'active' ? snap.steps : prev.steps;
+      // "estimated" is the accelerometer fallback, which counts just as
+      // legitimately as the pedometer; it is simply less precise.
+      const counting = snap.pedometer === 'active' || snap.pedometer === 'estimated';
+      const steps = counting ? snap.steps : prev.steps;
 
       // GPS is the truth for distance when it is on. Otherwise, for step
       // activities, estimate from stride so the number still means something.
       let distanceKm = prev.distanceKm;
       if (snap.gps === 'active') {
         distanceKm = snap.distanceKm;
-      } else if (snap.pedometer === 'active' && (activityType === 'walking' || activityType === 'running' || activityType === 'hiking')) {
+      } else if (
+        counting &&
+        (activityType === 'walking' || activityType === 'running' || activityType === 'hiking')
+      ) {
         distanceKm = stepsToDistance(steps, activityType === 'running' ? 'running' : 'walking');
       }
 

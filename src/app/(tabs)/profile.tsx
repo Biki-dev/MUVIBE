@@ -17,6 +17,7 @@ import { ProfileHeader } from '@/components/profile/profile-header';
 import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { FitnessOverview } from '@/components/profile/fitness-overview';
 import { ConsistencyCard } from '@/components/profile/consistency-card';
+import { BlitzRatingCard } from '@/components/profile/blitz-rating-card';
 import { AchievementsSection } from '@/components/profile/achievements-section';
 import { MyClubsSection } from '@/components/profile/my-clubs-section';
 import { MyChallengesSection } from '@/components/profile/my-challenges-section';
@@ -133,6 +134,9 @@ export default function ProfileScreen() {
 
         {/* Section 4 — Activity Streak (Your Consistency) */}
         <ConsistencyCard streak={streakInfo} />
+
+        {/* Blitz Elo, from the on-device rating store */}
+        <BlitzRatingCard />
 
         {/* Section 5 — Achievements & Badges (borderless icons, real logic) */}
         <AchievementsSection achievements={achievements} />

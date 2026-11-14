@@ -3,22 +3,25 @@
  * ─────────────────────────────────────────────────────────────────
  * Real sensor input for activity tracking.
  *
- *   steps     → expo-sensors Pedometer (Android, iOS). Not on web.
+ *   steps     → expo-sensors Pedometer, or the Accelerometer as a
+ *               fallback when the pedometer cannot be used.
  *   distance  → expo-location GPS, summed with the haversine formula.
  *
- * Nothing in here invents numbers. When a sensor is unavailable or the
- * permission is refused the tracker says so and the screen falls back
- * to the duration timer plus manual entry at the end of the session.
+ * Nothing in here invents numbers. A count from the accelerometer is
+ * reported as "estimated" and never dressed up as a hardware pedometer
+ * reading, because peak detection on motion is approximate.
  * ─────────────────────────────────────────────────────────────────
  */
 import { Platform } from 'react-native';
-import { Pedometer } from 'expo-sensors';
+import { Pedometer, Accelerometer } from 'expo-sensors';
 import * as Location from 'expo-location';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 
 export type SensorState =
   | 'idle'
   | 'active'
+  /** Counting from accelerometer peaks rather than the step sensor. */
+  | 'estimated'
   | 'unavailable'
   | 'denied'
   /** Android + Expo Go: the host app lacks ACTIVITY_RECOGNITION. */
@@ -58,6 +61,17 @@ export interface SensorOptions {
   onUpdate: (snapshot: SensorSnapshot) => void;
 }
 
+/* ── accelerometer step detection tuning ───────────────────────── */
+
+/** EMA weight for the new sample. Lower is smoother but laggier. */
+const SMOOTHING = 0.3;
+/** Rising past this (in g, where rest is ~1.0) arms a step. */
+const STEP_HIGH = 1.12;
+/** Must fall back below this before another step can be counted. */
+const STEP_LOW = 1.04;
+/** 250ms caps the rate at 4 steps a second, faster than anyone walks. */
+const MIN_STEP_GAP_MS = 250;
+
 const EARTH_RADIUS_KM = 6371;
 // GPS jitter while standing still is usually under this. Ignore it.
 const MIN_MOVE_KM = 0.004;
@@ -95,6 +109,13 @@ export class SensorTracker {
   private lastFix: { lat: number; lon: number } | null = null;
   private running = false;
 
+  // Accelerometer fallback state.
+  private motionSub: { remove: () => void } | null = null;
+  /** Low-passed acceleration magnitude. Seeded at rest, which is ~1 g. */
+  private smoothed = 1;
+  private aboveThreshold = false;
+  private lastStepAt = 0;
+
   constructor(private readonly options: SensorOptions) {}
 
   getSnapshot(): SensorSnapshot {
@@ -122,6 +143,12 @@ export class SensorTracker {
     this.running = false;
     this.pedometerSub?.remove();
     this.pedometerSub = null;
+    this.motionSub?.remove();
+    this.motionSub = null;
+    // Reset the detector so resuming does not fire a step from a stale
+    // half-finished peak, but keep the running total.
+    this.smoothed = 1;
+    this.aboveThreshold = false;
     this.locationSub?.remove();
     this.locationSub = null;
     this.lastFix = null;
@@ -147,7 +174,9 @@ export class SensorTracker {
     if (Platform.OS === 'android' && IS_EXPO_GO) {
       // Asking would fail regardless: Expo Go's manifest has no
       // ACTIVITY_RECOGNITION entry, so the grant can never happen.
+      // The accelerometer needs no permission, so count from that.
       this.snapshot.pedometer = 'needs-dev-build';
+      this.startMotionSteps();
       return;
     }
 
@@ -155,12 +184,14 @@ export class SensorTracker {
       const available = await Pedometer.isAvailableAsync();
       if (!available) {
         this.snapshot.pedometer = 'unavailable';
+        this.startMotionSteps();
         return;
       }
 
       const { status } = await Pedometer.requestPermissionsAsync();
       if (status !== 'granted') {
         this.snapshot.pedometer = 'denied';
+        this.startMotionSteps();
         return;
       }
 
@@ -175,6 +206,62 @@ export class SensorTracker {
     } catch (error) {
       console.warn('[sensors] pedometer failed:', error);
       this.snapshot.pedometer = 'unavailable';
+      this.startMotionSteps();
+    }
+  }
+
+  /* ── fallback step counting from the accelerometer ───────────── */
+
+  /**
+   * Counts steps by finding peaks in total acceleration.
+   *
+   * The accelerometer is in Expo Go and needs no Android permission, so
+   * this is what makes step counting work at all without a development
+   * build. It is an estimate: a phone jostling in a bag or a hand waved
+   * about will add counts, and a very smooth gait can drop some.
+   *
+   * Method: low-pass the magnitude to kill sensor noise, then count a
+   * step each time the smoothed signal rises past a high threshold
+   * having previously fallen below a low one. The two thresholds give
+   * hysteresis, so a signal hovering at the boundary cannot rattle out
+   * dozens of false steps. A minimum gap caps the rate at a plausible
+   * human cadence.
+   */
+  private startMotionSteps(): void {
+    if (Platform.OS === 'web' || this.motionSub) return;
+
+    try {
+      // 20 Hz: about ten samples per step at a normal walking cadence,
+      // enough to find the peak without draining the battery.
+      Accelerometer.setUpdateInterval(50);
+
+      this.motionSub = Accelerometer.addListener(({ x, y, z }) => {
+        // Magnitude in g. At rest gravity alone gives roughly 1.0.
+        const magnitude = Math.sqrt(x * x + y * y + z * z);
+
+        // Exponential moving average, the low-pass filter.
+        this.smoothed = this.smoothed * (1 - SMOOTHING) + magnitude * SMOOTHING;
+
+        const now = Date.now();
+
+        if (this.aboveThreshold) {
+          if (this.smoothed < STEP_LOW) this.aboveThreshold = false;
+          return;
+        }
+
+        if (this.smoothed > STEP_HIGH) {
+          this.aboveThreshold = true;
+          if (now - this.lastStepAt >= MIN_STEP_GAP_MS) {
+            this.lastStepAt = now;
+            this.snapshot.steps += 1;
+            this.emit();
+          }
+        }
+      });
+
+      this.snapshot.pedometer = 'estimated';
+    } catch (error) {
+      console.warn('[sensors] accelerometer fallback failed:', error);
     }
   }
 
@@ -256,6 +343,7 @@ export function describeSensors(
 
   if (useSteps) {
     if (snapshot.pedometer === 'active') parts.push('Pedometer on');
+    else if (snapshot.pedometer === 'estimated') parts.push('Steps estimated from motion');
     else if (snapshot.pedometer === 'denied') parts.push('Step permission denied');
     else if (snapshot.pedometer === 'needs-dev-build') {
       parts.push('Step counting needs a development build, not Expo Go');
@@ -272,6 +360,9 @@ export function describeSensors(
 
   if (parts.length === 0) return 'Timer running';
 
-  const anyActive = snapshot.pedometer === 'active' || snapshot.gps === 'active';
+  const anyActive =
+    snapshot.pedometer === 'active' ||
+    snapshot.pedometer === 'estimated' ||
+    snapshot.gps === 'active';
   return anyActive ? parts.join(' · ') : `${parts.join(' · ')}. Enter totals at the end.`;
 }
