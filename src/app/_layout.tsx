@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '@/context/auth-context';
 import { ChallengeProvider } from '@/context/challenge-context';
@@ -13,7 +14,15 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   // SF Pro Display. The splash stays up until the cuts are ready so the
   // first frame never flashes the system font.
+  //
+  // Ionicons is preloaded here too. @expo/vector-icons otherwise
+  // fetches it lazily the first time a glyph renders, and races a
+  // 12 second timeout per component: on a slow dev server that threw
+  // an uncaught ERR_DOWNLOAD for every icon on screen at once. Loading
+  // it once up front means one awaited request, and a failure lands in
+  // fontError below instead of a pile of unhandled rejections.
   const [fontsLoaded, fontError] = useFonts({
+    ...Ionicons.font,
     'SFProDisplay-Regular': require('../../assets/fonts/SFProDisplay-Regular.otf'),
     'SFProDisplay-Medium': require('../../assets/fonts/SFProDisplay-Medium.otf'),
     'SFProDisplay-Bold': require('../../assets/fonts/SFProDisplay-Bold.otf'),

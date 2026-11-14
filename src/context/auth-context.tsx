@@ -36,6 +36,13 @@ const CLOUD_UNAVAILABLE =
 interface AuthResult {
   success: boolean;
   error?: string;
+  /**
+   * True when this account has already finished onboarding, so the
+   * caller sends them Home instead of back through the six setup
+   * steps. Read from the users row as part of signing in, because the
+   * context state has not settled by the time the caller navigates.
+   */
+  onboardingDone?: boolean;
 }
 
 interface AuthContextType {
@@ -165,9 +172,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   /* ── profile ──────────────────────────────────────────────────── */
 
-  const loadProfileFromDB = async (userId: string) => {
+  const loadProfileFromDB = async (userId: string): Promise<boolean> => {
     const { data } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
-    if (!data) return;
+    if (!data) return false;
     setProfileState((p) => ({
       ...p,
       fullName: data.full_name ?? '',
@@ -178,9 +185,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       avatarUrl: data.avatar_url ?? '',
       bio: data.bio ?? '',
     }));
-    if (typeof data.onboarding_done === 'boolean') {
-      setIsOnboardingCompleted(data.onboarding_done);
-    }
+    const done = data.onboarding_done === true;
+    setIsOnboardingCompleted(done);
+    return done;
   };
 
   /**
@@ -201,9 +208,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const applySession = async (session: Session) => {
+  const applySession = async (session: Session): Promise<boolean> => {
+    // Profile first: a consumer watching hasValidSession would
+    // otherwise see a signed-in user whose onboarding flag is still
+    // the default false, and bounce them into onboarding.
+    const done = await loadProfileFromDB(session.user.id);
     setUser(sessionToUser(session));
-    await loadProfileFromDB(session.user.id);
+    return done;
   };
 
   /* ── boot ─────────────────────────────────────────────────────── */
@@ -275,8 +286,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!data.session) return { success: false, error: 'Could not start a guest session.' };
 
       await ensureUserRow(data.session);
-      await applySession(data.session);
-      return { success: true };
+      const onboardingDone = await applySession(data.session);
+      return { success: true, onboardingDone };
     } catch (error) {
       console.error('[auth] continueAsGuest failed:', error);
       return { success: false, error: 'Could not start a guest session.' };
@@ -297,17 +308,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) return { success: false, error: error.message };
     if (!data.user) return { success: false, error: 'Sign-up failed. Try again.' };
 
-    if (data.session) await ensureUserRow(data.session);
-    return { success: true };
+    if (!data.session) {
+      // Supabase returns a user with no session when the project
+      // requires email confirmation. Treating that as signed in is
+      // what later strands the app with no session at all.
+      return {
+        success: false,
+        error: 'Check your inbox to confirm your email, then sign in.',
+      };
+    }
+
+    await ensureUserRow(data.session);
+    const onboardingDone = await applySession(data.session);
+    return { success: true, onboardingDone };
   };
 
   const signInWithEmail = async (email: string, pass: string): Promise<AuthResult> => {
     if (!isSupabaseConfigured) return { success: false, error: CLOUD_UNAVAILABLE };
     if (!email || !pass) return { success: false, error: 'Please enter email and password.' };
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password: pass,
+    });
     if (error) return { success: false, error: error.message };
-    return { success: true };
+    if (!data.session) return { success: false, error: 'Sign-in failed. Try again.' };
+
+    // Adopt the session now so the caller can route on a settled
+    // answer. onAuthStateChange fires too, which is harmless: it
+    // reloads the same row.
+    const onboardingDone = await applySession(data.session);
+    return { success: true, onboardingDone };
   };
 
   /**
@@ -361,9 +392,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         refresh_token: refreshToken,
       });
       if (sessionError) return { success: false, error: sessionError.message };
-      if (sessionData.session) await ensureUserRow(sessionData.session);
+      if (!sessionData.session) {
+        return { success: false, error: 'Google sign-in did not return a session.' };
+      }
 
-      return { success: true };
+      await ensureUserRow(sessionData.session);
+      const onboardingDone = await applySession(sessionData.session);
+      return { success: true, onboardingDone };
     } catch (error) {
       console.error('[auth] signInWithGoogle failed:', error);
       return { success: false, error: 'Google sign-in failed.' };
@@ -454,7 +489,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   /* ── sign out and reset ───────────────────────────────────────── */
 
   const logout = async () => {
-    if (isSupabaseConfigured) await supabase.auth.signOut();
+    // Signing out must not depend on reaching Supabase. The server
+    // call was previously awaited bare, so a slow or failed request
+    // left the caller hanging: the screen never navigated and the
+    // session stayed on the device, which reads as a dead button.
+    //
+    // scope 'local' clears this device without waiting on the server,
+    // and the race caps how long even that can take.
+    if (isSupabaseConfigured) {
+      try {
+        await Promise.race([
+          supabase.auth.signOut({ scope: 'local' }),
+          new Promise((resolve) => setTimeout(resolve, 3000)),
+        ]);
+      } catch (error) {
+        console.warn('[auth] signOut failed, clearing locally anyway:', error);
+      }
+    }
     await clearSnapshot();
     setUser(null);
     setProfileState(defaultProfile);

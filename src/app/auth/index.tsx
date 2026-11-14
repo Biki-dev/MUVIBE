@@ -37,13 +37,29 @@ export default function WelcomeAuthScreen() {
   const [forgotEmail, setForgotEmail] = useState('');
   const [showTermsModal, setShowTermsModal] = useState(false);
 
+
+  /**
+   * Where to land after a successful sign-in.
+   *
+   * A returning account that already finished onboarding goes Home;
+   * only a new one walks the six setup steps. This used to push
+   * /onboarding/profile for everybody, which marched existing users
+   * back through setup every time they logged in.
+   *
+   * replace, not push, so the back gesture cannot return to the
+   * sign-in form on top of a live session.
+   */
+  const goAfterAuth = (onboardingDone?: boolean) => {
+    router.replace(onboardingDone ? '/(tabs)' : ('/onboarding/profile' as any));
+  };
+
   const handleGoogleAuth = async () => {
     setErrorMessage('');
     setIsSubmitting(true);
     try {
       const res = await signInWithGoogle();
       if (res.success) {
-        router.push('/onboarding/profile');
+        goAfterAuth(res.onboardingDone);
       } else {
         setErrorMessage(res.error || 'Google sign-in failed.');
       }
@@ -61,7 +77,7 @@ export default function WelcomeAuthScreen() {
     try {
       const res = await continueAsGuest();
       if (res.success) {
-        router.push('/onboarding/profile');
+        goAfterAuth(res.onboardingDone);
       } else {
         setErrorMessage(res.error || 'Could not start a guest session.');
       }
@@ -94,7 +110,7 @@ export default function WelcomeAuthScreen() {
       setIsSubmitting(false);
 
       if (res.success) {
-        router.push('/onboarding/profile');
+        goAfterAuth(res.onboardingDone);
       } else {
         setErrorMessage(res.error || 'Account creation failed.');
       }
@@ -105,7 +121,7 @@ export default function WelcomeAuthScreen() {
       setIsSubmitting(false);
 
       if (res.success) {
-        router.push('/onboarding/profile');
+        goAfterAuth(res.onboardingDone);
       } else {
         setErrorMessage(res.error || 'Invalid email or password.');
       }

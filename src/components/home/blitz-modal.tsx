@@ -48,11 +48,10 @@ import { RouteMap } from '@/components/activity/route-map';
 import { useAuth } from '@/context/auth-context';
 import { BlitzRating, EMPTY_RATING, getRating, recordBout } from '@/services/blitz-elo';
 import {
-  BlitzRoom,
   BlitzRoomState,
-  createRoomCode,
+  BlitzSocketRoom,
   normaliseRoomCode,
-} from '@/services/blitz-room';
+} from '@/services/blitz-socket';
 import { GeoPoint, SensorSnapshot, SensorTracker, describeSensors } from '@/services/sensors';
 
 interface BlitzModalProps {
@@ -62,6 +61,10 @@ interface BlitzModalProps {
   initialMode?: BlitzMode;
   onClose: () => void;
 }
+
+/** Mirrors the server's alphabet and length. */
+const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const ROOM_CODE_LENGTH = 5;
 
 const QUEUE_LABEL: Record<BlitzQueueType, string> = {
   stranger: 'Campus Brawl',
@@ -73,6 +76,21 @@ function poolFor(queue: BlitzQueueType): Challenger[] {
   if (queue === 'nearby') return NEARBY_CHALLENGERS;
   if (queue === 'custom') return CAMPUS_BRAWL_CHALLENGERS;
   return RIVAL_CHALLENGERS;
+}
+
+/**
+ * Keeps what the user types to characters a code can contain.
+ *
+ * The alphabet leaves out O, 0, I and 1 because codes get read aloud,
+ * so quietly dropping them beats accepting a code that can never match.
+ */
+function sanitiseCodeInput(raw: string): string {
+  return raw
+    .toUpperCase()
+    .split('')
+    .filter((ch) => ROOM_CODE_ALPHABET.includes(ch))
+    .join('')
+    .slice(0, ROOM_CODE_LENGTH);
 }
 
 function formatClock(seconds: number): string {
@@ -97,11 +115,13 @@ export function BlitzModal({ visible, initialQueue, initialMode, onClose }: Blit
   const [position, setPosition] = useState<GeoPoint | null>(null);
   const [rating, setRating] = useState<BlitzRating>(EMPTY_RATING);
 
-  // Private room state. `roomRef` holds the live channel; `roomState`
+  // Private room state. `roomRef` holds the live socket; `roomState`
   // is the snapshot the UI renders.
-  const roomRef = useRef<BlitzRoom | null>(null);
+  const roomRef = useRef<BlitzSocketRoom | null>(null);
   const [roomState, setRoomState] = useState<BlitzRoomState | null>(null);
   const [codeInput, setCodeInput] = useState('');
+  /** True once the typed code could actually name a room. */
+  const codeReady = normaliseRoomCode(codeInput) !== null;
   const [joining, setJoining] = useState(false);
   /** Live opponent score, kept in a ref so the bout tick can read it. */
   const liveOpponentRef = useRef(0);
@@ -294,25 +314,29 @@ export function BlitzModal({ visible, initialQueue, initialMode, onClose }: Blit
 
   /* ── private room ────────────────────────────────────────────── */
 
+  /** Opens a socket and runs either create or join on it. */
   const openRoom = useCallback(
-    async (code: string) => {
+    async (run: (room: BlitzSocketRoom) => Promise<void>) => {
       leaveRoom();
       setJoining(true);
-      const room = new BlitzRoom(code, {
-        id: user?.id ?? `guest-${Math.random().toString(36).slice(2, 8)}`,
+      const room = new BlitzSocketRoom({
         name: profile.fullName?.trim() || user?.name?.trim() || 'Athlete',
         elo: rating.elo,
       });
       roomRef.current = room;
       room.subscribe(setRoomState);
       setStatus('room');
-      await room.join();
+      await run(room);
       setJoining(false);
     },
-    [leaveRoom, user?.id, user?.name, profile.fullName, rating.elo]
+    [leaveRoom, user?.name, profile.fullName, rating.elo]
   );
 
-  const hostRoom = useCallback(() => openRoom(createRoomCode()), [openRoom]);
+  // The server picks the code, so hosting sends no code at all.
+  const hostRoom = useCallback(
+    () => openRoom((room) => room.create()),
+    [openRoom]
+  );
 
   const handleStartRoomBout = useCallback(() => {
     roomRef.current?.startBout(mode.id);
@@ -320,15 +344,14 @@ export function BlitzModal({ visible, initialQueue, initialMode, onClose }: Blit
 
   const joinRoom = useCallback(() => {
     const code = normaliseRoomCode(codeInput);
-    if (code) openRoom(code);
+    if (code) openRoom((room) => room.join(code));
   }, [codeInput, openRoom]);
 
   /** The other person in the room, if anyone has joined yet. */
   const roomPeer = useMemo(() => {
     if (!roomState) return null;
-    const meId = user?.id;
-    return roomState.members.find((m) => m.id !== meId) ?? null;
-  }, [roomState, user?.id]);
+    return roomState.members.find((m) => m.id !== roomState.selfId) ?? null;
+  }, [roomState]);
 
   // Keep the live rival score where the bout tick can read it.
   useEffect(() => {
@@ -521,20 +544,25 @@ export function BlitzModal({ visible, initialQueue, initialMode, onClose }: Blit
 
           <TextInput
             value={codeInput}
-            onChangeText={(t) => setCodeInput(t.toUpperCase())}
+            onChangeText={(t) => setCodeInput(sanitiseCodeInput(t))}
             placeholder="ROOM CODE"
             placeholderTextColor={Palette.muted}
             autoCapitalize="characters"
             autoCorrect={false}
-            maxLength={8}
+            maxLength={5}
             style={styles.codeInput}
             accessibilityLabel="Room code"
           />
           <Pressable
-            style={[styles.ghostBtn, !normaliseRoomCode(codeInput) && styles.btnDisabled]}
+            style={[
+              codeReady ? styles.primaryBtn : styles.ghostBtn,
+              !codeReady && styles.btnDisabled,
+            ]}
             onPress={joinRoom}
-            disabled={!normaliseRoomCode(codeInput) || joining}>
-            <Text style={styles.ghostBtnText}>Join room</Text>
+            disabled={!codeReady || joining}>
+            <Text style={codeReady ? styles.primaryBtnText : styles.ghostBtnText}>
+              Join room
+            </Text>
           </Pressable>
 
           <Pressable style={styles.ghostBtn} onPress={() => setStatus('mode_select')}>
@@ -568,7 +596,7 @@ export function BlitzModal({ visible, initialQueue, initialMode, onClose }: Blit
             <View key={m.id} style={styles.memberRow}>
               <View style={styles.memberDot} />
               <Text style={styles.memberName} numberOfLines={1}>
-                {m.id === user?.id ? `${m.name} (you)` : m.name}
+                {m.id === roomState.selfId ? `${m.name} (you)` : m.name}
               </Text>
               <Text style={styles.memberElo}>{m.elo} Elo</Text>
             </View>
@@ -730,7 +758,9 @@ export function BlitzModal({ visible, initialQueue, initialMode, onClose }: Blit
           <View style={styles.mapBlock}>
             <RouteMap route={route} position={position} follow />
             <Text style={styles.mapCaption}>
-              Your live route on OpenStreetMap. The rival is paced, not plotted.
+              {queue === 'custom'
+                ? 'Your live route on OpenStreetMap. Scores are live from both phones.'
+                : 'Your live route on OpenStreetMap. The rival is paced, not plotted.'}
             </Text>
           </View>
         ) : null}

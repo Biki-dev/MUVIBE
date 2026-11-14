@@ -3,7 +3,6 @@ import { ScrollView, StyleSheet, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { Palette, Spacing } from '@/constants/theme';
-import { useAuth } from '@/context/auth-context';
 import { useCommunity } from '@/context/community-context';
 import { useChallenges } from '@/context/challenge-context';
 import { getAllActivities } from '@/services/activity-storage';
@@ -12,7 +11,6 @@ import { ActivityRecord, StreakInfo, ActivityStats } from '@/types/activity';
 
 // Home section components
 import { HomeHeader } from '@/components/home/home-header';
-import { MobileWidgetSection } from '@/components/widgets/widget-card-section';
 import { WeeklyCalendar } from '@/components/home/weekly-calendar';
 import { TodayActivity } from '@/components/home/today-activity';
 import { QuickActions } from '@/components/home/quick-actions';
@@ -23,7 +21,6 @@ import { CommunityHighlights } from '@/components/home/community-highlights';
 import { MyClubsHome } from '@/components/home/my-clubs-home';
 
 export default function HomeScreen() {
-  const { profile, user } = useAuth();
   const { myClubs } = useCommunity();
   const { activeChallenges } = useChallenges();
 
@@ -103,10 +100,7 @@ export default function HomeScreen() {
         {/* Section 1 — Personalized greeting + date + streak badge */}
         <HomeHeader />
 
-        {/* Section 2 — Phone Home Screen Widgets Setup */}
-        <MobileWidgetSection activities={activities} streak={streak} />
-
-        {/* Section 3 — Weekly Calendar (real activity states per day) */}
+        {/* Section 2 — Weekly Calendar (real activity states per day) */}
         <WeeklyCalendar activities={activities} streak={streak} />
 
         {/* Section 3 — Today's real stats from Supabase activities */}
